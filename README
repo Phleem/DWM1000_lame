@@ -2,3 +2,10 @@ Wichtige Befehle:
 
 
 mbed compile -m DWM1000_STM32L443CC -t GCC_ARM
+
+black magic thing 
+
+gdb
+target extended-remote /dev/ttyACM0
+monitor swdp_scan
+
