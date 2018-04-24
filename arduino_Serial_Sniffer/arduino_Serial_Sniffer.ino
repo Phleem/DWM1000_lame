@@ -13,7 +13,10 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  Serial.write(myserial.read());
+  if(myserial.available() > 0){
+    Serial.write(myserial.read());
+  }
+  
   //Serial.write("HelloWorld");
   //delay(1000);
 }
