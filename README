@@ -3,9 +3,35 @@ Wichtige Befehle:
 
 mbed compile -m DWM1000_STM32L443CC -t GCC_ARM
 
+
 black magic thing 
 
+
+
 gdb
+
 target extended-remote /dev/ttyACM0
+
+monitor tpwr enable
+
 monitor swdp_scan
+
+attach <n>
+
+load <filename>
+
+detach 
+
+reset button drücken 
+
+the magic is done 
+
+
+later just:
+attach 1
+load ...
+detach 
+reset 
+
+
 

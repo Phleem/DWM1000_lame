@@ -23,7 +23,7 @@ int main() {
         Pin5 = 1;
         Pin6 = 1;
         //led1 = !led1;
-        wait(0.06);
+        wait(0.01);
         
         
         Pin1 = 0;
@@ -33,7 +33,7 @@ int main() {
         Pin4 = 0;
         Pin5 = 0;
         Pin6 = 0;
-        wait(0.05);
+        wait(0.01);
         pc.printf("Hello World!\n");
 
     }
