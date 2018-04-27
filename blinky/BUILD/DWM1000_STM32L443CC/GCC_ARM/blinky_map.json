@@ -1,10 +1,18 @@
 [
     {
+        "module": "DW1000.o", 
+        "size": {
+            ".data": 0, 
+            ".bss": 0, 
+            ".text": 1221
+        }
+    }, 
+    {
         "module": "[fill]", 
         "size": {
             ".data": 4, 
             ".bss": 19, 
-            ".text": 124
+            ".text": 109
         }
     }, 
     {
@@ -35,16 +43,16 @@
         "module": "main.o", 
         "size": {
             ".data": 4, 
-            ".bss": 336, 
-            ".text": 454
+            ".bss": 536, 
+            ".text": 492
         }
     }, 
     {
         "module": "mbed-os/drivers", 
         "size": {
             ".data": 4, 
-            ".bss": 100, 
-            ".text": 1143
+            ".bss": 156, 
+            ".text": 1895
         }
     }, 
     {
@@ -52,7 +60,7 @@
         "size": {
             ".data": 0, 
             ".bss": 66, 
-            ".text": 1373
+            ".text": 1417
         }
     }, 
     {
@@ -75,14 +83,14 @@
         "module": "mbed-os/targets", 
         "size": {
             ".data": 4, 
-            ".bss": 836, 
-            ".text": 9065
+            ".bss": 1372, 
+            ".text": 13836
         }
     }, 
     {
         "summary": {
-            "static_ram": 10524, 
-            "total_flash": 57918
+            "static_ram": 11316, 
+            "total_flash": 64729
         }
     }
 ]

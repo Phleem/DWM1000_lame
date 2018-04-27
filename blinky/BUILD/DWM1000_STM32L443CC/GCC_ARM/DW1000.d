@@ -1,5 +1,5 @@
-BUILD/DWM1000_STM32L443CC/GCC_ARM/./main.o: main.cpp \
- BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed_config.h mbed-os/mbed.h \
+BUILD/DWM1000_STM32L443CC/GCC_ARM/./DW1000.o: DW1000.cpp \
+ BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed_config.h DW1000.h mbed-os/mbed.h \
  mbed-os/rtos/rtos.h mbed-os/rtos/TARGET_CORTEX/mbed_rtos_storage.h \
  mbed-os/rtos/TARGET_CORTEX/rtx5/rtx_lib.h \
  mbed-os/rtos/TARGET_CORTEX/rtx5/core_cm.h \
@@ -181,5 +181,4 @@ BUILD/DWM1000_STM32L443CC/GCC_ARM/./main.o: main.cpp \
  mbed-os/platform/ATCmdParser.h mbed-os/platform/FileSystemHandle.h \
  mbed-os/platform/FileHandle.h mbed-os/platform/DirHandle.h \
  mbed-os/platform/CriticalSectionLock.h mbed-os/platform/DeepSleepLock.h \
- mbed-os/platform/Callback.h mbed-os/platform/FunctionPointer.h \
- DW1000Utils.h DW1000.h
+ mbed-os/platform/Callback.h mbed-os/platform/FunctionPointer.h
