@@ -18,10 +18,13 @@ int main() {
 
 	DW1000 dw1000(spi, &irq, PA_4, NC);
 
-	dw1000.writeRegister40( DW1000_GPIO_CTRL , 0x00, 0x00); // Set GPIO as GPIO (no special function)
-	dw1000.writeRegister40( DW1000_GPIO_CTRL , 0x08, 0x00); // Set GPIO DirectionRegister to output
-  dw1000.writeRegister40( DW1000_GPIO_CTRL , 0x0C, 0x01); // Set GPIO 1 to HIGH
+	dw1000.writeRegister32( DW1000_GPIO_CTRL , 0x00, 0x00); // Set GPIO as GPIO (no special function)
+	dw1000.writeRegister32( DW1000_GPIO_CTRL , 0x08, 0b110000); //set DirectionRegisterMask, and set Direction to Output
+	dw1000.writeRegister32( DW1000_GPIO_CTRL , 0x0C, 0b110011);// set GPIO_DOutMask to enable GPIO Output; Set GPIO 1 & GPIO 0 to HIGH and enable in Mask
 
+
+uint32_t deviceID = 0;
+deviceID = dw1000.getDeviceID();
 
 
 
@@ -39,6 +42,7 @@ int main() {
 
         wait(1);
         pc.printf("Hello World!\n");
+				pc.printf("%x", deviceID);
 
     }
 }
