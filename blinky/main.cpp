@@ -95,30 +95,33 @@ int main() {
     pc.printf("EUI register: %016llX\r\n", dw.getEUI());
     pc.printf("Voltage: %fV\r\n", dw.getVoltage());
 
-    node.isAnchor = true;                       // declare as anchor or beacon
+    bool isSender = 0;
+    uint8_t messageToSend = (uint8_t)'A';
+    uint32_t framelength = 0b11;
+    uint32_t preamblelength = 0b1000000000000000000;
+    uint32_t TXConf = framelength | preamblelength;
 
-    if (node.isAnchor) {
-        node.address = 1;
-        myprintf("This node is Anchor node %d \r\n", node.address);
-    } else {
-        node.address = 0;
-        myprintf("This node is a Beacon. ");
+
+    if(isSender == 0){
+      uint8_t message;
+
+      while(1){
+        dw.writeRegister32(DW1000_SYS_CTRL, 0, 256); //enable receiving
+        dw.readRegister(DW1000_RX_BUFFER, 0, &message, dw.getFramelength());
+        pc.printf("%d\n", message);
+        wait(1);
+      }
+
+
+    }
+    else{
+      dw.writeRegister32(DW1000_TX_FCTRL, 0x00, TXConf); //set Framelength (+PreambleLength??)
+      dw.writeRegister(DW1000_TX_BUFFER, 0, &messageToSend, 1 ); //write sendRegister
+      dw.writeRegister32(DW1000_SYS_CTRL, 0, 0b10); //set Startbit to start TX sending
     }
 
-    if (node.address == 5){ // the node with address 5 was used as an observer node putting out the results in our test case
-        dw.setCallbacks(&altCallbackRX, NULL);
-    }
 
-    while(1) {
-        if (!node.isAnchor){
-            rangeAndDisplayAll();
-            //calibrationRanging(4);
 
-        } else {
-            //myprintf("."); // to see if the core and output is working
-            wait(0.5);
-        }
-    }
 }
 
 
