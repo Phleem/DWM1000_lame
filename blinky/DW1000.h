@@ -1,4 +1,4 @@
-// Adapted from Matthias Grob & Manuel Stalder - ETH Zürich - 2015
+// by Matthias Grob & Manuel Stalder - ETH Zürich - 2015
 
 #ifndef DW1000_H
 #define DW1000_H
@@ -51,19 +51,12 @@
 #define DW1000_SUBADDRESS_FLAG      0x40 // if we have a sub address second Bit has to be 1
 #define DW1000_2_SUBADDRESS_FLAG    0x80 // if we have a long sub adress (more than 7 Bit) we set this Bit in the first part
 
-class DW1000
-{
-    public:
-        const static float TIMEUNITS_TO_US = (1/(128*499.2f));  // conversion between the decawave timeunits (ca 15.65ps) to microseconds.
-        const static float US_TO_TIMEUNITS = (128*499.2f);      // conversion between microseconds to the decawave timeunits (ca 15.65ps).
-        const static uint64_t CONST_2POWER40 = 1099511627776;  // Time register in DW1000 is 40 bit so this is needed to detect overflows.
-
-        DW1000(SPI& spi, InterruptIn* irq, PinName CS, PinName RESET = NC);              // constructor, uses SPI class
-
+class DW1000 {
+    public:            
+        DW1000(PinName MOSI, PinName MISO, PinName SCLK, PinName CS, PinName IRQ);              // constructor, uses SPI class
         void setCallbacks(void (*callbackRX)(void), void (*callbackTX)(void));                  // setter for callback functions, automatically enables interrupt, if NULL is passed the coresponding interrupt gets disabled
         template<typename T>
-        void setCallbacks(T* tptr, void (T::*mptrRX)(void), void (T::*mptrTX)(void))
-        {      // overloaded setter to treat member function pointers of objects
+            void setCallbacks(T* tptr, void (T::*mptrRX)(void), void (T::*mptrTX)(void)) {      // overloaded setter to treat member function pointers of objects
             callbackRX.attach(tptr, mptrRX);                                                    // possible client code: dw.setCallbacks(this, &A::callbackRX, &A::callbackTX);
             callbackTX.attach(tptr, mptrTX);                                                    // concept seen in line 100 of http://developer.mbed.org/users/mbed_official/code/mbed/docs/4fc01daae5a5/InterruptIn_8h_source.html
             setInterrupt(true,true);
@@ -75,72 +68,46 @@ class DW1000
         void setEUI(uint64_t EUI);                                                              // sets 64 bit Extended Unique Identifier according to IEEE standard
         float getVoltage();                                                                     // gets the current chip voltage measurement form the A/D converter
         uint64_t getStatus();                                                                   // get the 40 bit device status
-        bool hasTransmissionStarted();                                                          // check if frame transmission has started
-        bool hasSentPreamble();                                                                 // check if preamble has been sent
-        bool hasSentPHYHeader();                                                                // check if PHY header has been sent
-        bool hasSentFrame();                                                                    // check if frame has been sent completely
-        bool hasReceivedFrame();
-        void clearReceivedFlag();
-        void clearSentFlag();
-        uint64_t getSYSTimestamp();
         uint64_t getRXTimestamp();
         uint64_t getTXTimestamp();
-        float getSYSTimestampUS();
-        float getRXTimestampUS();
-        float getTXTimestampUS();
-
-        uint16_t getStdNoise();
-        uint16_t getPACC();
-        uint16_t getFPINDEX();
-        uint16_t getFPAMPL1();
-        uint16_t getFPAMPL2();
-        uint16_t getFPAMPL3();
-        uint16_t getCIRPWR();
-        uint8_t getPRF();
         
         void sendString(char* message);                                                         // to send String with arbitrary length
         void receiveString(char* message);                                                      // to receive char string (length of the buffer must be 1021 to be safe)
         void sendFrame(uint8_t* message, uint16_t length);                                      // send a raw frame (length in bytes)
         void sendDelayedFrame(uint8_t* message, uint16_t length, uint64_t TxTimestamp);
-        uint16_t getFramelength();                                                              // to get the framelength of the received frame from the PHY header
         void startRX();                                                                         // start listening for frames
         void stopTRX();                                                                         // disable tranceiver go back to idle mode
-
-        static void hardwareReset(PinName reset_pin);
-        static void hardwareReset(DigitalInOut& reset_pin);
-        void softwareReset();
-
-        uint8_t readRegister8(uint8_t reg, uint16_t subaddress);                                // expressive methods to read or write the number of bits written in the name
-        uint16_t readRegister16(uint8_t reg, uint16_t subaddress);
-        uint32_t readRegister32(uint8_t reg, uint16_t subaddress);
-        uint64_t readRegister40(uint8_t reg, uint16_t subaddress);
-        void writeRegister8(uint8_t reg, uint16_t subaddress, uint8_t buffer);
-        void writeRegister16(uint8_t reg, uint16_t subaddress, uint16_t buffer);
-        void writeRegister32(uint8_t reg, uint16_t subaddress, uint32_t buffer);
-        void writeRegister40(uint8_t reg, uint16_t subaddress, uint64_t buffer);
-        void readRegister(uint8_t reg, uint16_t subaddress, uint8_t *buffer, int length);       // reads the selected part of a slave register into the buffer memory
-        void writeRegister(uint8_t reg, uint16_t subaddress, uint8_t *buffer, int length);      // writes the buffer memory to the selected slave register
-
-    private:
+        
+    //private:
         void loadLDE();                                                                         // load the leading edge detection algorithm to RAM, [IMPORTANT because receiving malfunction may occur] see User Manual LDELOAD on p22 & p158
         void resetRX();                                                                         // soft reset only the tranciever part of DW1000
         void resetAll();                                                                        // soft reset the entire DW1000 (some registers stay as they were see User Manual)
 
         // Interrupt
-        InterruptIn* irq;
+        InterruptIn irq;                                                                        // Pin used to handle Events from DW1000 by an Interrupthandler
         FunctionPointer callbackRX;                                                             // function pointer to callback which is called when successfull RX took place
         FunctionPointer callbackTX;                                                             // function pointer to callback which is called when successfull TX took place
         void setInterrupt(bool RX, bool TX);                                                    // set Interrupt for received a good frame (CRC ok) or transmission done
         void ISR();                                                                             // interrupt handling method (also calls according callback methods)
+        uint16_t getFramelength();                                                              // to get the framelength of the received frame from the PHY header
         
         // SPI Inteface
-        SPI& spi;                                                                                // SPI Bus
+        SPI spi;                                                                                // SPI Bus
         DigitalOut cs;                                                                          // Slave selector for SPI-Bus (here explicitly needed to start and end SPI transactions also usable to wake up DW1000)
-        DigitalInOut reset;
+        
+        uint8_t readRegister8(uint8_t reg, uint16_t subaddress);                                // expressive methods to read or write the number of bits written in the name
+        uint16_t readRegister16(uint8_t reg, uint16_t subaddress);
+        uint64_t readRegister40(uint8_t reg, uint16_t subaddress);
+        void writeRegister8(uint8_t reg, uint16_t subaddress, uint8_t buffer);
+        void writeRegister16(uint8_t reg, uint16_t subaddress, uint16_t buffer);
+        void writeRegister32(uint8_t reg, uint16_t subaddress, uint32_t buffer);
+        void writeRegister40(uint8_t reg, uint16_t subaddress, uint64_t buffer);
 
+        void readRegister(uint8_t reg, uint16_t subaddress, uint8_t *buffer, int length);       // reads the selected part of a slave register into the buffer memory
+        void writeRegister(uint8_t reg, uint16_t subaddress, uint8_t *buffer, int length);      // writes the buffer memory to the selected slave register
         void setupTransaction(uint8_t reg, uint16_t subaddress, bool write);                    // sets up an SPI read or write transaction with correct register address and offset
         void select();                                                                          // selects the only slave for a transaction
-        void deselect();   
+        void deselect();                                                                        // deselects the only slave after transaction
 };
 
 #endif

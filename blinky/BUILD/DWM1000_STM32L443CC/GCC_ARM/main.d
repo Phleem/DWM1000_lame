@@ -181,5 +181,5 @@ BUILD/DWM1000_STM32L443CC/GCC_ARM/./main.o: main.cpp \
  mbed-os/platform/ATCmdParser.h mbed-os/platform/FileSystemHandle.h \
  mbed-os/platform/FileHandle.h mbed-os/platform/DirHandle.h \
  mbed-os/platform/CriticalSectionLock.h mbed-os/platform/DeepSleepLock.h \
- mbed-os/platform/Callback.h mbed-os/platform/FunctionPointer.h \
- DW1000Utils.h DW1000.h
+ mbed-os/platform/Callback.h mbed-os/platform/FunctionPointer.h PC.h \
+ DW1000.h MM2WayRanging.h

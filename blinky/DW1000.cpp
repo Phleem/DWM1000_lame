@@ -1,24 +1,12 @@
-// Adapted from Matthias Grob & Manuel Stalder - ETH Zürich - 2015
-
 #include "DW1000.h"
 
-// Change this depending on whether damaged or heatlhy DWM1000 modules are used.
-const bool DWM1000_DAMAGED = true;
-//const bool DWM1000_DAMAGED = false;
-
-//#include "PC.h"
-//static PC pc(USBTX, USBRX, 115200);           // USB UART Terminal
-
-DW1000::DW1000(SPI& spi, InterruptIn* irq, PinName CS, PinName RESET)
-: irq(irq), spi(spi), cs(CS), reset(RESET) {
-    if (irq != NULL) {
-        irq->rise(this, &DW1000::ISR);
-    }
-
+DW1000::DW1000(PinName MOSI, PinName MISO, PinName SCLK, PinName CS, PinName IRQ) : irq(IRQ), spi(MOSI, MISO, SCLK), cs(CS) {
     setCallbacks(NULL, NULL);
-
-    select();
+    
     deselect();                         // Chip must be deselected first
+    spi.format(8,0);                    // Setup the spi for standard 8 bit data and SPI-Mode 0 (GPIO5, GPIO6 open circuit or ground on DW1000)
+    spi.frequency(5000000);             // with a 1MHz clock rate (worked up to 49MHz in our Test)
+    
     resetAll();                         // we do a soft reset of the DW1000 everytime the driver starts
 
     // Configuration TODO: make method for that
@@ -69,24 +57,22 @@ DW1000::DW1000(SPI& spi, InterruptIn* irq, PinName CS, PinName RESET)
     writeRegister16(DW1000_LDE_CTRL, 0x1804, 16384); // = 2^14 a quarter of the range of the 16-Bit register which corresponds to zero calibration in a round trip (TX1+RX2+TX2+RX1)
 
     writeRegister8(DW1000_SYS_CFG, 3, 0x20);    // enable auto reenabling receiver after error
-
-    if (irq != NULL) {
-        irq->enable_irq();
-    }
+    
+    irq.rise(this, &DW1000::ISR);       // attach interrupt handler to rising edge of interrupt pin from DW1000
 }
 
 void DW1000::setCallbacks(void (*callbackRX)(void), void (*callbackTX)(void)) {
     bool RX = false;
     bool TX = false;
     if (callbackRX) {
-        this->callbackRX.attach(callbackRX);
+        DW1000::callbackRX.attach(callbackRX);
         RX = true;
     }
     if (callbackTX) {
-        this->callbackTX.attach(callbackTX);
+        DW1000::callbackTX.attach(callbackTX);
         TX = true;
     }
-    setInterrupt(RX, TX);
+    setInterrupt(RX,TX);
 }
 
 uint32_t DW1000::getDeviceID() {
@@ -121,99 +107,12 @@ uint64_t DW1000::getStatus() {
     return readRegister40(DW1000_SYS_STATUS, 0);
 }
 
-bool DW1000::hasReceivedFrame() {
-    uint64_t status = getStatus();
-    return status & 0x4000;
-}
-
-void DW1000::clearReceivedFlag() {
-    writeRegister16(DW1000_SYS_STATUS, 0, 0x6F00);              // clearing of receiving status bits
-}
-
-bool DW1000::hasTransmissionStarted() {
-    uint64_t status = getStatus();
-    return status & 0x10;
-}
-
-bool DW1000::hasSentPreamble() {
-    uint64_t status = getStatus();
-    return status & 0x20;
-}
-
-bool DW1000::hasSentPHYHeader() {
-    uint64_t status = getStatus();
-    return status & 0x40;
-}
-
-bool DW1000::hasSentFrame() {
-    uint64_t status = getStatus();
-    return status & 0x80;
-}
-
-void DW1000::clearSentFlag() {
-    writeRegister8(DW1000_SYS_STATUS, 0, 0xF8);                 // clearing of sending status bits
-}
-
-uint64_t DW1000::getSYSTimestamp() {
-    return readRegister40(DW1000_SYS_TIME, 0);
-}
-
 uint64_t DW1000::getRXTimestamp() {
     return readRegister40(DW1000_RX_TIME, 0);
 }
 
 uint64_t DW1000::getTXTimestamp() {
     return readRegister40(DW1000_TX_TIME, 0);
-}
-
-float DW1000::getSYSTimestampUS() {
-    return getSYSTimestamp() * TIMEUNITS_TO_US;
-}
-
-float DW1000::getRXTimestampUS() {
-    return getRXTimestamp() * TIMEUNITS_TO_US;
-}
-
-float DW1000::getTXTimestampUS() {
-    return getTXTimestamp() * TIMEUNITS_TO_US;
-}
-
-uint16_t DW1000::getStdNoise() {
-    return readRegister16(DW1000_RX_FQUAL, 0x00);
-}
-
-uint16_t DW1000::getPACC() {
-    uint32_t v = readRegister32(DW1000_RX_FINFO, 0x00);
-    v >>= 20;
-    return static_cast<uint16_t>(v);
-}
-
-uint16_t DW1000::getFPINDEX() {
-    return readRegister16(DW1000_RX_TIME, 0x05);
-}
-
-uint16_t DW1000::getFPAMPL1() {
-    return readRegister16(DW1000_RX_TIME, 0x07);
-}
-
-uint16_t DW1000::getFPAMPL2() {
-    return readRegister16(DW1000_RX_FQUAL, 0x02);
-}
-
-uint16_t DW1000::getFPAMPL3() {
-    return readRegister16(DW1000_RX_FQUAL, 0x04);
-}
-
-uint16_t DW1000::getCIRPWR() {
-    return readRegister16(DW1000_RX_FQUAL, 0x06);
-}
-
-uint8_t DW1000::getPRF()
-{
-    uint32_t prf_mask = static_cast<uint32_t>(0x1 << 19 | 0x1 << 18);
-    uint32_t prf = readRegister32(DW1000_CHAN_CTRL, 0x00);
-    prf >>= 18;
-    return static_cast<uint8_t>(prf & prf_mask);
 }
 
 void DW1000::sendString(char* message) {
@@ -227,9 +126,6 @@ void DW1000::receiveString(char* message) {
 void DW1000::sendFrame(uint8_t* message, uint16_t length) {
     //if (length >= 1021) length = 1021;                            // check for maximim length a frame can have with 1024 Byte frames [not used, see constructor]
     if (length >= 125) length = 125;                                // check for maximim length a frame can have with 127 Byte frames
-
-    Timer timer;
-    timer.start();
     writeRegister(DW1000_TX_BUFFER, 0, message, length);            // fill buffer
     
     uint8_t backup = readRegister8(DW1000_TX_FCTRL, 1);             // put length of frame
@@ -239,15 +135,10 @@ void DW1000::sendFrame(uint8_t* message, uint16_t length) {
     
     stopTRX();                                                      // stop receiving
     writeRegister8(DW1000_SYS_CTRL, 0, 0x02);                       // trigger sending process by setting the TXSTRT bit
+    startRX();                                                      // enable receiver again
 }
 
 void DW1000::sendDelayedFrame(uint8_t* message, uint16_t length, uint64_t TxTimestamp) {
-    clearSentFlag();                                                // This is necessary, otherwise we pick up the transmission time of the previous send
-
-    if (TxTimestamp > CONST_2POWER40) {
-        TxTimestamp -= CONST_2POWER40;
-    }
-
     //if (length >= 1021) length = 1021;                            // check for maximim length a frame can have with 1024 Byte frames [not used, see constructor]
     if (length >= 125) length = 125;                                // check for maximim length a frame can have with 127 Byte frames
     writeRegister(DW1000_TX_BUFFER, 0, message, length);            // fill buffer
@@ -261,15 +152,15 @@ void DW1000::sendDelayedFrame(uint8_t* message, uint16_t length, uint64_t TxTime
 
     stopTRX();                                                      // stop receiving
     writeRegister8(DW1000_SYS_CTRL, 0, 0x02 | 0x04);                // trigger sending process by setting the TXSTRT and TXDLYS bit
+    startRX();                                                      // enable receiver again
 }
 
 void DW1000::startRX() {
     writeRegister8(DW1000_SYS_CTRL, 0x01, 0x01);                    // start listening for preamble by setting the RXENAB bit
-    wait_us(16);                                                    // According to page 81 in the user manual (RXENAB bit)
 }
 
 void DW1000::stopTRX() {
-    writeRegister8(DW1000_SYS_CTRL, 0, 0x40);                       // disable tranceiver go back to idle mode by setting the TRXOFF bit
+    writeRegister8(DW1000_SYS_CTRL, 0, 0x40);                       // disable tranceiver go back to idle mode
 }
 
 // PRIVATE Methods ------------------------------------------------------------------------------------
@@ -285,43 +176,7 @@ void DW1000::resetRX() {
     writeRegister8(DW1000_PMSC, 3, 0xF0);   // clear RX reset
 }
 
-void DW1000::hardwareReset(PinName reset_pin) {
-    DigitalInOut reset(reset_pin);
-    hardwareReset(reset);
-}
-
-void DW1000::hardwareReset(DigitalInOut& reset) {
-    if (reset.is_connected()) {
-        // DWM1000 RESET logic.
-        if (DWM1000_DAMAGED) {
-            // The following code works for damaged DWM1000 modules.
-            // IMPORTANT: This will damage healthy DWM1000 modules!
-            reset.output();
-            reset = 1;
-            wait_ms(100);
-            reset = 0;
-            wait_ms(100);
-            reset = 1;
-            wait_ms(100);
-        } else {
-            // The following code works for healthy DWM1000 modules
-            reset.output();
-            reset = 0;
-            wait_ms(100);
-            reset.input();
-        }
-    }
-}
-
-void DW1000::softwareReset() {
-    stopTRX();
-    clearReceivedFlag();
-    clearSentFlag();
-}
-
 void DW1000::resetAll() {
-    hardwareReset(reset);
-
     writeRegister8(DW1000_PMSC, 0, 0x01);   // set clock to XTAL
     writeRegister8(DW1000_PMSC, 3, 0x00);   // set All reset
     wait_us(10);                            // wait for PLL to lock
@@ -361,12 +216,6 @@ uint8_t DW1000::readRegister8(uint8_t reg, uint16_t subaddress) {
 uint16_t DW1000::readRegister16(uint8_t reg, uint16_t subaddress) {
     uint16_t result;
     readRegister(reg, subaddress, (uint8_t*)&result, 2);
-    return result;
-}
-
-uint32_t DW1000::readRegister32(uint8_t reg, uint16_t subaddress) {
-    uint32_t result;
-    readRegister(reg, subaddress, (uint8_t*)&result, 4);
     return result;
 }
 
@@ -424,15 +273,10 @@ void DW1000::setupTransaction(uint8_t reg, uint16_t subaddress, bool write) {
 }
 
 void DW1000::select() {     // always called to start an SPI transmission
-    if (irq != NULL) {
-        irq->disable_irq();
-    }
+    irq.disable_irq();      // disable interrupts from DW1000 during SPI becaus this leads to crashes!      TODO: if you have other interrupt handlers attached on the micro controller, they could also interfere.
     cs = 0;                 // set Cable Select pin low to start transmission
 }
-
 void DW1000::deselect() {   // always called to end an SPI transmission
     cs = 1;                 // set Cable Select pin high to stop transmission
-    if (irq != NULL) {
-        irq->enable_irq();
-    }
+    irq.enable_irq();       // reenable the interrupt handler
 }
