@@ -95,7 +95,7 @@ int main() {
     pc.printf("EUI register: %016llX\r\n", dw.getEUI());
     pc.printf("Voltage: %fV\r\n", dw.getVoltage());
 
-    bool isSender = 1;
+    bool isSender = 0;
     char messageToSend[] = {"Alarm"};
     uint32_t framelength = 0b11;
     uint32_t preamblelength = 0b1000000000000000000;
@@ -103,15 +103,17 @@ int main() {
 
 
     if(isSender == 0){
-      char message[8];
+      char message[128];
 
       while(1){
         //dw.writeRegister32(DW1000_SYS_CTRL, 0, 256); //enable receiving
         //dw.readRegister(DW1000_RX_BUFFER, 0, message, dw.getFramelength());
         //pc.printf("%d\n", message);
+        pc.printf("Recieving: \n");
         dw.startRX();
         dw.receiveString(message);
-        pc.printf("I received %s", message);
+        pc.printf("I received %s \n", message);
+        wait(1);
       }
 
 
