@@ -96,21 +96,21 @@ int main() {
     pc.printf("Voltage: %fV\r\n", dw.getVoltage());
 
     bool isSender = 1;
-    char* messageToSend = "Alarm";
+    char messageToSend[] = {"Alarm"};
     uint32_t framelength = 0b11;
     uint32_t preamblelength = 0b1000000000000000000;
     uint32_t TXConf = framelength | preamblelength;
 
 
     if(isSender == 0){
-      char* message[8];
+      char message[8];
 
       while(1){
         //dw.writeRegister32(DW1000_SYS_CTRL, 0, 256); //enable receiving
         //dw.readRegister(DW1000_RX_BUFFER, 0, message, dw.getFramelength());
         //pc.printf("%d\n", message);
-        startRX();
-        receiveString(message);
+        dw.startRX();
+        dw.receiveString(message);
         pc.printf("I received %s", message);
       }
 
@@ -121,7 +121,7 @@ int main() {
         //dw.writeRegister32(DW1000_TX_FCTRL, 0x00, TXConf); //set Framelength (+PreambleLength??)
         //dw.writeRegister(DW1000_TX_BUFFER, 0, &messageToSend, 1 ); //write sendRegister
         //dw.writeRegister32(DW1000_SYS_CTRL, 0, 0b10); //set Startbit to start TX sending
-        sendString(messageToSend);
+        dw.sendString(messageToSend);
         wait(2);
       }
     }
