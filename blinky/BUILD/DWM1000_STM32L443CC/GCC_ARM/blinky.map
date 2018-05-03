@@ -12907,187 +12907,188 @@ LOAD /home/markus/WORK/gcc-arm-toolchain/gcc-arm-none-eabi-7-2017-q4-major/bin/.
                 0x000000000800eb1c        0xc ./BUILD/DWM1000_STM32L443CC/GCC_ARM/./MM2WayRanging.o
                 0x000000000800eb1c                void mbed::Callback<void ()>::generate<mbed::Callback<void ()>::method_context<MM2WayRanging, void (MM2WayRanging::*)()> >(mbed::Callback<void ()>::method_context<MM2WayRanging, void (MM2WayRanging::*)()> const&)::ops
  .rodata.main.str1.1
-                0x000000000800eb28       0x69 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/./main.o
+                0x000000000800eb28       0x65 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/./main.o
  .rodata._ZN12SingletonPtrIN4rtos5MutexEE3getEv.str1.1
-                0x000000000800eb91       0x36 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/drivers/FlashIAP.o
- *fill*         0x000000000800ebc7        0x1 
+                0x000000000800eb8d       0x36 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/drivers/FlashIAP.o
+ *fill*         0x000000000800ebc3        0x1 
  .rodata._ZTVN4mbed11InterruptInE
-                0x000000000800ebc8       0x10 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/drivers/InterruptIn.o
-                0x000000000800ebc8                vtable for mbed::InterruptIn
+                0x000000000800ebc4       0x10 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/drivers/InterruptIn.o
+                0x000000000800ebc4                vtable for mbed::InterruptIn
  .rodata._ZTVN4mbed3SPIE
-                0x000000000800ebd8       0x20 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/drivers/SPI.o
-                0x000000000800ebd8                vtable for mbed::SPI
+                0x000000000800ebd4       0x20 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/drivers/SPI.o
+                0x000000000800ebd4                vtable for mbed::SPI
  .rodata._ZTVN4mbed6SerialE
-                0x000000000800ebf8       0x8c ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/drivers/Serial.o
-                0x000000000800ebf8                vtable for mbed::Serial
+                0x000000000800ebf4       0x8c ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/drivers/Serial.o
+                0x000000000800ebf4                vtable for mbed::Serial
  .rodata._ZN4mbed10SerialBase12_irq_handlerEm9SerialIrq.str1.1
-                0x000000000800ec84       0x23 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/drivers/SerialBase.o
+                0x000000000800ec80       0x23 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/drivers/SerialBase.o
  .rodata._ZTVN4mbed10SerialBaseE
-                0x000000000800ec84       0x18 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/drivers/SerialBase.o
-                0x000000000800ec84                vtable for mbed::SerialBase
+                0x000000000800ec80       0x18 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/drivers/SerialBase.o
+                0x000000000800ec80                vtable for mbed::SerialBase
  .rodata.pinmap_merge.str1.1
-                0x000000000800ec9c       0x11 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/hal/mbed_pinmap_common.o
+                0x000000000800ec98       0x11 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/hal/mbed_pinmap_common.o
  .rodata.pinmap_peripheral.str1.1
-                0x000000000800ecad       0x20 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/hal/mbed_pinmap_common.o
+                0x000000000800eca9       0x20 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/hal/mbed_pinmap_common.o
  .rodata.pinmap_pinout.str1.1
-                0x000000000800eccd       0x11 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/hal/mbed_pinmap_common.o
+                0x000000000800ecc9       0x11 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/hal/mbed_pinmap_common.o
  .rodata.sleep_manager_lock_deep_sleep.str1.1
-                0x000000000800ecde       0x2d ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/hal/mbed_sleep_manager.o
+                0x000000000800ecda       0x2d ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/hal/mbed_sleep_manager.o
  .rodata.sleep_manager_unlock_deep_sleep.str1.1
-                0x000000000800ed0b       0x26 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/hal/mbed_sleep_manager.o
+                0x000000000800ed07       0x26 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/hal/mbed_sleep_manager.o
  .rodata.initialize.str1.1
-                0x000000000800ed31       0x22 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/hal/mbed_ticker_api.o
- *fill*         0x000000000800ed53        0x1 
+                0x000000000800ed2d       0x22 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/hal/mbed_ticker_api.o
+ *fill*         0x000000000800ed4f        0x1 
  .rodata.us_data
-                0x000000000800ed54        0x8 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/hal/mbed_us_ticker_api.o
+                0x000000000800ed50        0x8 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/hal/mbed_us_ticker_api.o
  .rodata.us_interface
-                0x000000000800ed5c       0x1c ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/hal/mbed_us_ticker_api.o
+                0x000000000800ed58       0x1c ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/hal/mbed_us_ticker_api.o
  .rodata._ZTVN4mbed8FileBaseE
-                0x000000000800ed78       0x10 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/platform/FileBase.o
-                0x000000000800ed78                vtable for mbed::FileBase
+                0x000000000800ed74       0x10 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/platform/FileBase.o
+                0x000000000800ed74                vtable for mbed::FileBase
  .rodata._ZTVN4mbed10FileHandleE
-                0x000000000800ed88       0x4c ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/platform/FileHandle.o
-                0x000000000800ed88                vtable for mbed::FileHandle
+                0x000000000800ed84       0x4c ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/platform/FileHandle.o
+                0x000000000800ed84                vtable for mbed::FileHandle
  .rodata._ZTVN4mbed8FileLikeE
-                0x000000000800edd4       0x5c ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/platform/Stream.o
-                0x000000000800edd4                vtable for mbed::FileLike
+                0x000000000800edd0       0x5c ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/platform/Stream.o
+                0x000000000800edd0                vtable for mbed::FileLike
  .rodata._ZN4mbed6StreamC2EPKc.str1.1
-                0x000000000800ee30       0x22 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/platform/Stream.o
- *fill*         0x000000000800ee52        0x2 
+                0x000000000800ee2c       0x22 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/platform/Stream.o
+ *fill*         0x000000000800ee4e        0x2 
  .rodata._ZTVN4mbed6StreamE
-                0x000000000800ee54       0x6c ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/platform/Stream.o
-                0x000000000800ee54                vtable for mbed::Stream
+                0x000000000800ee50       0x6c ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/platform/Stream.o
+                0x000000000800ee50                vtable for mbed::Stream
  .rodata.mbed_assert_internal.str1.1
-                0x000000000800eec0       0x31 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/platform/mbed_assert.o
+                0x000000000800eebc       0x31 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/platform/mbed_assert.o
  .rodata.core_util_critical_section_enter.str1.1
-                0x000000000800eef1       0x5d ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/platform/mbed_critical.o
- *fill*         0x000000000800ef4e        0x2 
+                0x000000000800eeed       0x5d ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/platform/mbed_critical.o
+ *fill*         0x000000000800ef4a        0x2 
  .rodata._ZZ18us_ticker_get_infoE4info
-                0x000000000800ef50        0x8 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/platform/mbed_retarget.o
+                0x000000000800ef4c        0x8 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/platform/mbed_retarget.o
  .rodata.__stderr_name
-                0x000000000800ef58        0x8 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/platform/mbed_retarget.o
-                0x000000000800ef58                __stderr_name
+                0x000000000800ef54        0x8 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/platform/mbed_retarget.o
+                0x000000000800ef54                __stderr_name
  .rodata.__stdin_name
-                0x000000000800ef60        0x7 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/platform/mbed_retarget.o
-                0x000000000800ef60                __stdin_name
+                0x000000000800ef5c        0x7 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/platform/mbed_retarget.o
+                0x000000000800ef5c                __stdin_name
  .rodata.__stdout_name
-                0x000000000800ef67        0x8 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/platform/mbed_retarget.o
-                0x000000000800ef67                __stdout_name
+                0x000000000800ef63        0x8 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/platform/mbed_retarget.o
+                0x000000000800ef63                __stdout_name
  .rodata._ZN4rtos5Mutex11constructorEPKc.str1.1
-                0x000000000800ef6f       0x36 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/rtos/Mutex.o
+                0x000000000800ef6b       0x36 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/rtos/Mutex.o
  .rodata.mbed_start_main.str1.1
-                0x000000000800efa5       0x28 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/rtos/TARGET_CORTEX/mbed_boot.o
+                0x000000000800efa1       0x28 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/rtos/TARGET_CORTEX/mbed_boot.o
  .rodata.pre_main.str1.1
-                0x000000000800efcd       0x27 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/rtos/TARGET_CORTEX/mbed_boot.o
+                0x000000000800efc9       0x27 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/rtos/TARGET_CORTEX/mbed_boot.o
  .rodata.osRtxErrorNotify.str1.1
-                0x000000000800eff4      0x201 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/rtos/TARGET_CORTEX/mbed_rtx_handlers.o
+                0x000000000800eff0      0x201 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/rtos/TARGET_CORTEX/mbed_rtx_handlers.o
  .rodata.svcRtxKernelGetInfo.str1.1
-                0x000000000800f1f5        0xb ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/rtos/TARGET_CORTEX/rtx5/rtx_kernel.o
- .rodata        0x000000000800f200       0xa0 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/rtos/TARGET_CORTEX/rtx5/rtx_lib.o
-                0x000000000800f200                os_cb_sections
-                0x000000000800f238                osRtxConfig
+                0x000000000800f1f1        0xb ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/rtos/TARGET_CORTEX/rtx5/rtx_kernel.o
+ .rodata        0x000000000800f1fc       0xa0 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/rtos/TARGET_CORTEX/rtx5/rtx_lib.o
+                0x000000000800f1fc                os_cb_sections
+                0x000000000800f234                osRtxConfig
  .rodata.osRtxUserSVC
-                0x000000000800f2a0        0x4 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/rtos/TARGET_CORTEX/rtx5/rtx_lib.o
-                0x000000000800f2a0                osRtxUserSVC
+                0x000000000800f29c        0x4 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/rtos/TARGET_CORTEX/rtx5/rtx_lib.o
+                0x000000000800f29c                osRtxUserSVC
  .rodata.os_idle_thread_attr
-                0x000000000800f2a4       0x24 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/rtos/TARGET_CORTEX/rtx5/rtx_lib.o
+                0x000000000800f2a0       0x24 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/rtos/TARGET_CORTEX/rtx5/rtx_lib.o
  .rodata.os_timer_mq_attr
-                0x000000000800f2c8       0x18 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/rtos/TARGET_CORTEX/rtx5/rtx_lib.o
+                0x000000000800f2c4       0x18 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/rtos/TARGET_CORTEX/rtx5/rtx_lib.o
  .rodata.os_timer_thread_attr
-                0x000000000800f2e0       0x24 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/rtos/TARGET_CORTEX/rtx5/rtx_lib.o
+                0x000000000800f2dc       0x24 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/rtos/TARGET_CORTEX/rtx5/rtx_lib.o
  .rodata.PinMap_SPI_MISO
-                0x000000000800f304       0x3c ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/TARGET_STM32L4/TARGET_STM32L443xC/TARGET_DWM1000_STM32L443CC/PeripheralPins.o
-                0x000000000800f304                PinMap_SPI_MISO
+                0x000000000800f300       0x3c ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/TARGET_STM32L4/TARGET_STM32L443xC/TARGET_DWM1000_STM32L443CC/PeripheralPins.o
+                0x000000000800f300                PinMap_SPI_MISO
  .rodata.PinMap_SPI_MOSI
-                0x000000000800f340       0x3c ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/TARGET_STM32L4/TARGET_STM32L443xC/TARGET_DWM1000_STM32L443CC/PeripheralPins.o
-                0x000000000800f340                PinMap_SPI_MOSI
+                0x000000000800f33c       0x3c ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/TARGET_STM32L4/TARGET_STM32L443xC/TARGET_DWM1000_STM32L443CC/PeripheralPins.o
+                0x000000000800f33c                PinMap_SPI_MOSI
  .rodata.PinMap_SPI_SCLK
-                0x000000000800f37c       0x3c ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/TARGET_STM32L4/TARGET_STM32L443xC/TARGET_DWM1000_STM32L443CC/PeripheralPins.o
-                0x000000000800f37c                PinMap_SPI_SCLK
+                0x000000000800f378       0x3c ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/TARGET_STM32L4/TARGET_STM32L443xC/TARGET_DWM1000_STM32L443CC/PeripheralPins.o
+                0x000000000800f378                PinMap_SPI_SCLK
  .rodata.PinMap_SPI_SSEL
-                0x000000000800f3b8       0x30 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/TARGET_STM32L4/TARGET_STM32L443xC/TARGET_DWM1000_STM32L443CC/PeripheralPins.o
-                0x000000000800f3b8                PinMap_SPI_SSEL
+                0x000000000800f3b4       0x30 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/TARGET_STM32L4/TARGET_STM32L443xC/TARGET_DWM1000_STM32L443CC/PeripheralPins.o
+                0x000000000800f3b4                PinMap_SPI_SSEL
  .rodata.PinMap_UART_RX
-                0x000000000800f3e8       0x48 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/TARGET_STM32L4/TARGET_STM32L443xC/TARGET_DWM1000_STM32L443CC/PeripheralPins.o
-                0x000000000800f3e8                PinMap_UART_RX
+                0x000000000800f3e4       0x48 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/TARGET_STM32L4/TARGET_STM32L443xC/TARGET_DWM1000_STM32L443CC/PeripheralPins.o
+                0x000000000800f3e4                PinMap_UART_RX
  .rodata.PinMap_UART_TX
-                0x000000000800f430       0x3c ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/TARGET_STM32L4/TARGET_STM32L443xC/TARGET_DWM1000_STM32L443CC/PeripheralPins.o
-                0x000000000800f430                PinMap_UART_TX
+                0x000000000800f42c       0x3c ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/TARGET_STM32L4/TARGET_STM32L443xC/TARGET_DWM1000_STM32L443CC/PeripheralPins.o
+                0x000000000800f42c                PinMap_UART_TX
  .rodata.CSWTCH.49
-                0x000000000800f46c        0x4 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/TARGET_STM32L4/device/stm32l4xx_hal_uart.o
+                0x000000000800f468        0x4 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/TARGET_STM32L4/device/stm32l4xx_hal_uart.o
  .rodata.CSWTCH.50
-                0x000000000800f470        0xd ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/TARGET_STM32L4/device/stm32l4xx_hal_uart.o
+                0x000000000800f46c        0xd ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/TARGET_STM32L4/device/stm32l4xx_hal_uart.o
  .rodata.AHBPrescTable
-                0x000000000800f47d       0x10 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/TARGET_STM32L4/device/system_stm32l4xx.o
-                0x000000000800f47d                AHBPrescTable
+                0x000000000800f479       0x10 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/TARGET_STM32L4/device/system_stm32l4xx.o
+                0x000000000800f479                AHBPrescTable
  .rodata.APBPrescTable
-                0x000000000800f48d        0x8 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/TARGET_STM32L4/device/system_stm32l4xx.o
-                0x000000000800f48d                APBPrescTable
- *fill*         0x000000000800f495        0x3 
+                0x000000000800f489        0x8 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/TARGET_STM32L4/device/system_stm32l4xx.o
+                0x000000000800f489                APBPrescTable
+ *fill*         0x000000000800f491        0x3 
  .rodata.MSIRangeTable
-                0x000000000800f498       0x30 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/TARGET_STM32L4/device/system_stm32l4xx.o
-                0x000000000800f498                MSIRangeTable
+                0x000000000800f494       0x30 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/TARGET_STM32L4/device/system_stm32l4xx.o
+                0x000000000800f494                MSIRangeTable
  .rodata.pin_lines_desc
-                0x000000000800f4c8       0xc0 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/TARGET_STM32L4/gpio_irq_device.o
-                0x000000000800f4c8                pin_lines_desc
+                0x000000000800f4c4       0xc0 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/TARGET_STM32L4/gpio_irq_device.o
+                0x000000000800f4c4                pin_lines_desc
  .rodata.serial_init.str1.1
-                0x000000000800f588       0x58 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/TARGET_STM32L4/serial_device.o
+                0x000000000800f584       0x58 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/TARGET_STM32L4/serial_device.o
  .rodata.spi_get_clock_freq.str1.1
-                0x000000000800f5e0       0x1a ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/TARGET_STM32L4/spi_api.o
+                0x000000000800f5dc       0x1a ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/TARGET_STM32L4/spi_api.o
  .rodata.Set_GPIO_Clock.str1.1
-                0x000000000800f5fa       0x21 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/gpio_api.o
+                0x000000000800f5f6       0x21 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/gpio_api.o
  .rodata.gpio_set.str1.1
-                0x000000000800f61b       0x3b ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/gpio_api.o
+                0x000000000800f617       0x3b ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/gpio_api.o
  .rodata.gpio_irq_init.str1.1
-                0x000000000800f656       0x27 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/gpio_irq_api.o
+                0x000000000800f652       0x27 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/gpio_irq_api.o
  .rodata.handle_interrupt_in.str1.1
-                0x000000000800f67d       0x2a ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/gpio_irq_api.o
- *fill*         0x000000000800f6a7        0x1 
+                0x000000000800f679       0x2a ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/gpio_irq_api.o
+ *fill*         0x000000000800f6a3        0x1 
  .rodata.ll_pin_defines
-                0x000000000800f6a8       0x40 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/pinmap.o
-                0x000000000800f6a8                ll_pin_defines
+                0x000000000800f6a4       0x40 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/pinmap.o
+                0x000000000800f6a4                ll_pin_defines
  .rodata.pin_function.str1.1
-                0x000000000800f6e8       0x26 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/pinmap.o
+                0x000000000800f6e4       0x26 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/pinmap.o
                                          0x3b (size before relaxing)
  .rodata.init_uart.str1.1
-                0x000000000800f70e       0x18 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/serial_api.o
+                0x000000000800f70a       0x18 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/serial_api.o
  .rodata.baudrate_prescaler_table
-                0x000000000800f726       0x10 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/stm_spi_api.o
+                0x000000000800f722       0x10 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/stm_spi_api.o
  .rodata.init_spi.str1.1
-                0x000000000800f736       0x16 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/stm_spi_api.o
+                0x000000000800f732       0x16 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/stm_spi_api.o
  .rodata.spi_init.str1.1
-                0x000000000800f74c       0x46 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/stm_spi_api.o
- *fill*         0x000000000800f792        0x2 
+                0x000000000800f748       0x46 ./BUILD/DWM1000_STM32L443CC/GCC_ARM/mbed-os/targets/TARGET_STM/stm_spi_api.o
+ *fill*         0x000000000800f78e        0x2 
  .rodata._global_impure_ptr
-                0x000000000800f794        0x4 /home/markus/WORK/gcc-arm-toolchain/gcc-arm-none-eabi-7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/softfp/libc.a(lib_a-impure.o)
-                0x000000000800f794                _global_impure_ptr
+                0x000000000800f790        0x4 /home/markus/WORK/gcc-arm-toolchain/gcc-arm-none-eabi-7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/softfp/libc.a(lib_a-impure.o)
+                0x000000000800f790                _global_impure_ptr
  .rodata._setlocale_r.str1.4
-                0x000000000800f798        0xa /home/markus/WORK/gcc-arm-toolchain/gcc-arm-none-eabi-7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/softfp/libc.a(lib_a-locale.o)
+                0x000000000800f794        0xa /home/markus/WORK/gcc-arm-toolchain/gcc-arm-none-eabi-7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/softfp/libc.a(lib_a-locale.o)
                                           0xd (size before relaxing)
- *fill*         0x000000000800f7a2        0x2 
+ *fill*         0x000000000800f79e        0x2 
  .rodata.str1.4
-                0x000000000800f7a4        0x2 /home/markus/WORK/gcc-arm-toolchain/gcc-arm-none-eabi-7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/softfp/libc.a(lib_a-locale.o)
- *fill*         0x000000000800f7a6        0x2 
+                0x000000000800f7a0        0x2 /home/markus/WORK/gcc-arm-toolchain/gcc-arm-none-eabi-7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/softfp/libc.a(lib_a-locale.o)
+ *fill*         0x000000000800f7a2        0x2 
  .rodata._svfprintf_r.str1.4
-                0x000000000800f7a8       0x42 /home/markus/WORK/gcc-arm-toolchain/gcc-arm-none-eabi-7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/softfp/libc.a(lib_a-svfprintf.o)
- *fill*         0x000000000800f7ea        0x2 
+                0x000000000800f7a4       0x42 /home/markus/WORK/gcc-arm-toolchain/gcc-arm-none-eabi-7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/softfp/libc.a(lib_a-svfprintf.o)
+ *fill*         0x000000000800f7e6        0x2 
  .rodata.blanks.8551
-                0x000000000800f7ec       0x10 /home/markus/WORK/gcc-arm-toolchain/gcc-arm-none-eabi-7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/softfp/libc.a(lib_a-svfprintf.o)
+                0x000000000800f7e8       0x10 /home/markus/WORK/gcc-arm-toolchain/gcc-arm-none-eabi-7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/softfp/libc.a(lib_a-svfprintf.o)
  .rodata.zeroes.8552
-                0x000000000800f7fc       0x10 /home/markus/WORK/gcc-arm-toolchain/gcc-arm-none-eabi-7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/softfp/libc.a(lib_a-svfprintf.o)
+                0x000000000800f7f8       0x10 /home/markus/WORK/gcc-arm-toolchain/gcc-arm-none-eabi-7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/softfp/libc.a(lib_a-svfprintf.o)
  .rodata._vfprintf_r.str1.4
-                0x000000000800f80c       0x42 /home/markus/WORK/gcc-arm-toolchain/gcc-arm-none-eabi-7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/softfp/libc.a(lib_a-vfprintf.o)
+                0x000000000800f808       0x42 /home/markus/WORK/gcc-arm-toolchain/gcc-arm-none-eabi-7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/softfp/libc.a(lib_a-vfprintf.o)
  .rodata.blanks.8566
-                0x000000000800f80c       0x10 /home/markus/WORK/gcc-arm-toolchain/gcc-arm-none-eabi-7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/softfp/libc.a(lib_a-vfprintf.o)
+                0x000000000800f808       0x10 /home/markus/WORK/gcc-arm-toolchain/gcc-arm-none-eabi-7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/softfp/libc.a(lib_a-vfprintf.o)
  .rodata.zeroes.8567
-                0x000000000800f81c       0x10 /home/markus/WORK/gcc-arm-toolchain/gcc-arm-none-eabi-7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/softfp/libc.a(lib_a-vfprintf.o)
+                0x000000000800f818       0x10 /home/markus/WORK/gcc-arm-toolchain/gcc-arm-none-eabi-7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/softfp/libc.a(lib_a-vfprintf.o)
  .rodata._ctype_
-                0x000000000800f82c      0x101 /home/markus/WORK/gcc-arm-toolchain/gcc-arm-none-eabi-7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/softfp/libc.a(lib_a-ctype_.o)
-                0x000000000800f82c                _ctype_
- *fill*         0x000000000800f92d        0x3 
+                0x000000000800f828      0x101 /home/markus/WORK/gcc-arm-toolchain/gcc-arm-none-eabi-7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/softfp/libc.a(lib_a-ctype_.o)
+                0x000000000800f828                _ctype_
+ *fill*         0x000000000800f929        0x3 
  .rodata._dtoa_r.str1.4
-                0x000000000800f930       0x10 /home/markus/WORK/gcc-arm-toolchain/gcc-arm-none-eabi-7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/softfp/libc.a(lib_a-dtoa.o)
+                0x000000000800f92c       0x10 /home/markus/WORK/gcc-arm-toolchain/gcc-arm-none-eabi-7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/softfp/libc.a(lib_a-dtoa.o)
                                          0x12 (size before relaxing)
+ *fill*         0x000000000800f93c        0x4 
  .rodata.__mprec_bigtens
                 0x000000000800f940       0x28 /home/markus/WORK/gcc-arm-toolchain/gcc-arm-none-eabi-7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/softfp/libc.a(lib_a-mprec.o)
                 0x000000000800f940                __mprec_bigtens
