@@ -2,13 +2,15 @@
 extern "C" {
 #include "libdw1000.h"
 }
- 
+
 DigitalOut heartbeat(LED2);
 DigitalOut led(LED1);
 SPI spi(SPI_MOSI, SPI_MISO, SPI_SCK);
 DigitalOut cs(SPI_CS);
 DigitalIn sIRQ(PA_0);
 DigitalOut sReset(PA_1);
+Serial pc(PA_9, PA_10, 9600);
+
 
 
 
@@ -26,7 +28,7 @@ static void spiWrite(dwDevice_t* dev, const void* header, size_t headerLength,
 	for(size_t i = 0; i<dataLength; ++i) {
 		spi.write(dataP[i]);
 	}
-	
+
 	cs = 1;
 }
 
@@ -42,7 +44,7 @@ static void spiRead(dwDevice_t* dev, const void *header, size_t headerLength,
 	for(size_t i = 0; i<dataLength; ++i) {
 		dataP[i] = spi.write(0);
 	}
-	
+
 	cs = 1;
 }
 
@@ -87,24 +89,24 @@ void send_dummy(dwDevice_t* dev) {
 	dwNewTransmit(dev);
 	dwSetDefaults(dev);
 	dwSetData(dev, (uint8_t*)txPacket, 6);
-
 	dwStartTransmit(dev);
 
 }
 
 // main() runs in its own thread in the OS
 int main() {
-	heartbeat = 1;
 
+  bool isSender = false;
+
+	heartbeat = 1;
 	sReset = 1;
 	cs = 1;
-
 	dwInit(dwm, &ops);       // Init libdw
 	uint8_t result = dwConfigure(dwm); // Configure the dw1000 chip
 	if (result == 0) {
 		dwEnableAllLeds(dwm);
-	} else {
 	}
+
 
 	dwTime_t delay = {.full = 0};
 	dwSetAntenaDelay(dwm, delay);
@@ -120,9 +122,25 @@ int main() {
 
 	dwCommitConfiguration(dwm);
 
+  if(isSender == true){
     while (true) {
 		send_dummy(dwm);
 		heartbeat = !heartbeat;
 		wait(.5f);
     }
+  }
+  else {
+    while (true){
+      dwNewReceive(dwm);
+      dwSetDefaults(dwm);
+      dwStartReceive(dwm);
+
+      uint8_t data[dwGetDataLength(dwm)];
+      dwGetData(dwm, data, dwGetDataLength(dwm));
+      pc.printf("Data Received:\n");
+      pc.printf("%c\n",(char)data[0]);
+    }
+  }
+
+
 }
