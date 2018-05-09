@@ -105,7 +105,7 @@ int main() {
         myprintf("This node is a Beacon. ");
     }
 
-    if (node.address == 5){ // the node with address 5 was used as an observer node putting out the results in our test case
+    if (node.address == 1){ // the node with address 5 was used as an observer node putting out the results in our test case
         dw.setCallbacks(&altCallbackRX, NULL);
     }
 

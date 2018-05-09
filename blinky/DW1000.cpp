@@ -2,11 +2,11 @@
 
 DW1000::DW1000(PinName MOSI, PinName MISO, PinName SCLK, PinName CS, PinName IRQ) : irq(IRQ), spi(MOSI, MISO, SCLK), cs(CS) {
     setCallbacks(NULL, NULL);
-    
+
     deselect();                         // Chip must be deselected first
     spi.format(8,0);                    // Setup the spi for standard 8 bit data and SPI-Mode 0 (GPIO5, GPIO6 open circuit or ground on DW1000)
     spi.frequency(5000000);             // with a 1MHz clock rate (worked up to 49MHz in our Test)
-    
+
     resetAll();                         // we do a soft reset of the DW1000 everytime the driver starts
 
     // Configuration TODO: make method for that
@@ -48,7 +48,7 @@ DW1000::DW1000(PinName MOSI, PinName MISO, PinName SCLK, PinName CS, PinName IRQ
     writeRegister8 (DW1000_FS_CTRL, 0x0B, 0xA6);                //FS_PLLTUNE for channel 5
 
     loadLDE();                          // important everytime DW1000 initialises/awakes otherwise the LDE algorithm must be turned off or there's receiving malfunction see User Manual LDELOAD on p22 & p158
-    
+
     // 110kbps CAUTION: a lot of other registers have to be set for an optimized operation on 110kbps
     writeRegister16(DW1000_TX_FCTRL, 1, 0x0800 | 0x0100 | 0x0080); // use 1024 symbols preamble (0x0800) (previously 2048 - 0x2800), 16MHz pulse repetition frequency (0x0100), 110kbps bit rate (0x0080) see p.69 of DW1000 User Manual
     writeRegister8(DW1000_SYS_CFG, 2, 0x44);    // enable special receiving option for 110kbps (disable smartTxPower)!! (0x44) see p.64 of DW1000 User Manual [DO NOT enable 1024 byte frames (0x03) becuase it generates disturbance of ranging don't know why...]
@@ -57,7 +57,7 @@ DW1000::DW1000(PinName MOSI, PinName MISO, PinName SCLK, PinName CS, PinName IRQ
     writeRegister16(DW1000_LDE_CTRL, 0x1804, 16384); // = 2^14 a quarter of the range of the 16-Bit register which corresponds to zero calibration in a round trip (TX1+RX2+TX2+RX1)
 
     writeRegister8(DW1000_SYS_CFG, 3, 0x20);    // enable auto reenabling receiver after error
-    
+
     irq.rise(this, &DW1000::ISR);       // attach interrupt handler to rising edge of interrupt pin from DW1000
 }
 
@@ -127,12 +127,12 @@ void DW1000::sendFrame(uint8_t* message, uint16_t length) {
     //if (length >= 1021) length = 1021;                            // check for maximim length a frame can have with 1024 Byte frames [not used, see constructor]
     if (length >= 125) length = 125;                                // check for maximim length a frame can have with 127 Byte frames
     writeRegister(DW1000_TX_BUFFER, 0, message, length);            // fill buffer
-    
+
     uint8_t backup = readRegister8(DW1000_TX_FCTRL, 1);             // put length of frame
     length += 2;                                                    // including 2 CRC Bytes
     length = ((backup & 0xFC) << 8) | (length & 0x03FF);
     writeRegister16(DW1000_TX_FCTRL, 0, length);
-    
+
     stopTRX();                                                      // stop receiving
     writeRegister8(DW1000_SYS_CTRL, 0, 0x02);                       // trigger sending process by setting the TXSTRT bit
     startRX();                                                      // enable receiver again
@@ -171,7 +171,7 @@ void DW1000::loadLDE() {                                            // initialis
     writeRegister16(DW1000_PMSC, 0, 0x0200);                        // recover to PLL clock
 }
 
-void DW1000::resetRX() {    
+void DW1000::resetRX() {
     writeRegister8(DW1000_PMSC, 3, 0xE0);   // set RX reset
     writeRegister8(DW1000_PMSC, 3, 0xF0);   // clear RX reset
 }
@@ -262,7 +262,7 @@ void DW1000::setupTransaction(uint8_t reg, uint16_t subaddress, bool write) {
     if (subaddress > 0) {                                                       // there's a subadress, we need to set flag and send second header byte
         spi.write(reg | DW1000_SUBADDRESS_FLAG);
         if (subaddress > 0x7F) {                                                // sub address too long, we need to set flag and send third header byte
-            spi.write((uint8_t)(subaddress & 0x7F) | DW1000_2_SUBADDRESS_FLAG); // and 
+            spi.write((uint8_t)(subaddress & 0x7F) | DW1000_2_SUBADDRESS_FLAG); // and
             spi.write((uint8_t)(subaddress >> 7));
         } else {
             spi.write((uint8_t)subaddress);
