@@ -83,15 +83,16 @@ dwDevice_t* dwm = &dwm_device;
 void txcallback(dwDevice_t *dev){}
 void rxcallback(dwDevice_t *dev){}
 
-const char* txPacket = "foobar";
+char* txPacket = "foobar";
 
 void send_dummy(dwDevice_t* dev) {
 	dwNewTransmit(dev);
 	dwSetDefaults(dev);
-	dwSetData(dev, (uint8_t*)txPacket, 6);
+	dwSetData(dev, (uint8_t*)txPacket, strlen(txPacket));
 	dwStartTransmit(dev);
 
 }
+
 
 // main() runs in its own thread in the OS
 int main() {
@@ -122,9 +123,15 @@ int main() {
 
 	dwCommitConfiguration(dwm);
 
+  uint8_t sendercount = 0;
   if(isSender == true){
     while (true) {
 		send_dummy(dwm);
+    sendercount ++;
+    char str[20];
+    sprintf(str, "%d", sendercount);
+    strcat(str, ". Message");
+    txPacket = str;
 		heartbeat = !heartbeat;
 		wait(.5f);
     }
@@ -137,8 +144,10 @@ int main() {
 
       uint8_t data[dwGetDataLength(dwm)];
       dwGetData(dwm, data, dwGetDataLength(dwm));
-      pc.printf("Data Received:\n");
-      pc.printf("%c\n",(char)data[0]);
+      pc.printf("Data Received:\r\n");
+      //data[dwGetDataLength(dwm)] = '\0';
+      pc.printf("%s\n", data);
+      wait(1);
     }
   }
 
