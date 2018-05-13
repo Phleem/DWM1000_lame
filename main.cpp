@@ -97,7 +97,7 @@ void send_dummy(dwDevice_t* dev) {
 // main() runs in its own thread in the OS
 int main() {
 
-  bool isSender = false;
+  bool isSender = true;
 
 	heartbeat = 1;
 	sReset = 1;
@@ -126,14 +126,14 @@ int main() {
   uint8_t sendercount = 0;
   if(isSender == true){
     while (true) {
-		send_dummy(dwm);
-    sendercount ++;
-    char str[20];
-    sprintf(str, "%d", sendercount);
-    strcat(str, ". Message");
-    txPacket = str;
-		heartbeat = !heartbeat;
-		wait(.5f);
+        send_dummy(dwm);
+        sendercount ++;
+        char str[20];
+        sprintf(str, "%d", sendercount);
+        strcat(str, ". Message");
+        txPacket = str;
+        heartbeat = !heartbeat;
+        wait(.5f);
     }
   }
   else {
