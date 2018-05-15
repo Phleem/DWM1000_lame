@@ -93,6 +93,23 @@ void send_dummy(dwDevice_t* dev) {
 
 }
 
+void calculateSSTimeOfFlight(uint32_t* timeRound, uint32_t* timeReply, uint32_t* timeOfFlight){
+    *timeOfFlight = (uint32_t) (0.5f * (*timeRound - *timeReply));
+}
+void calculateDeltaTime(uint32_t* timeStart, uint32_t* timeEnd, uint32_t* timeDelta){
+
+    *timeDelta = timeEnd->low32 - timeStart->low32;
+}
+//Receiver: send something
+//Receiver: get TransmitTimestamp timeRound1
+//Receiver: get ReceiveTimestamp timeReply1
+//Receiver: isReceiveTimestampvailable
+//Receiver: send to Sender
+//Sender: get TransmitTimestamp timeReply2
+//Sender: get ReceiveTimestamp timeRound2
+//Sender: send to Receiver timeReply2 und timeRound2
+//Receiver: calculate timeOfFlight and Range
+
 
 // main() runs in its own thread in the OS
 int main() {
