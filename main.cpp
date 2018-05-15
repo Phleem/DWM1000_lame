@@ -97,7 +97,6 @@ void calculateSSTimeOfFlight(uint32_t* timeRound, uint32_t* timeReply, uint32_t*
     *timeOfFlight = (uint32_t) (0.5f * (*timeRound - *timeReply));
 }
 void calculateDeltaTime(uint32_t* timeStart, uint32_t* timeEnd, uint32_t* timeDelta){
-
     *timeDelta = timeEnd->low32 - timeStart->low32;
 }
 //Receiver: send something
