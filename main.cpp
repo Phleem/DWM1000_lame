@@ -88,7 +88,7 @@ dwDevice_t dwm_device;
 dwDevice_t* dwm = &dwm_device;
 dwTime_t tStart;
 dwTime_t tEnd;
-uint32_t tProp;
+uint64_t tProp;
 
 string uint64ToString(uint64_t input) {
   string result = "";
@@ -151,7 +151,7 @@ void rxcallback(dwDevice_t *dev){
 void calculateSSTimeOfFlight(uint32_t* timeRound, uint32_t* timeReply, uint32_t* timeOfFlight){
     *timeOfFlight = (uint32_t) (0.5f * (*timeRound - *timeReply));
 }
-void calculateDeltaTime(uint32_t* timeStart, uint32_t* timeEnd, uint32_t* timeDelta){
+void calculateDeltaTime(uint64_t* timeStart, uint64_t* timeEnd, uint64_t* timeDelta){
     *timeDelta = (*timeEnd) - (*timeStart);
 }
 
@@ -167,7 +167,7 @@ void rangingBeacon(){
 }
 
 void rangingAnchor(){
-    dwInterruptOnReceived(dwm, true);
+    //dwInterruptOnReceived(dwm, true);
 		dwTime_t systemTime1;
 		systemTime1.full = 0;
 		dwTime_t systemTime2;
@@ -175,14 +175,15 @@ void rangingAnchor(){
 		dwGetSystemTimestamp(dwm, &systemTime1);
 		wait(2);
 		dwGetSystemTimestamp(dwm, &systemTime2);
-		pc.printf("%"PRIu32"\n",systemTime1.low32);
-		pc.printf("%"PRIu32"\n",systemTime2.low32);
+		//pc.printf("%"PRIu32"\n",systemTime1.low32);
+		//pc.printf("%"PRIu32"\n",systemTime2.low32);
     
-		send_ranging(dwm);
-    calculateDeltaTime(&(tStart.low32), &(tEnd.low32), &tProp);
-		
-    //pc.printf("%"PRIu32"\n",tProp);
-    //pc.printf("%"PRIu64"\n",tProp);
+		//send_ranging(dwm);
+    calculateDeltaTime(&(systemTime1.full), &(systemTime2.full), &tProp);
+		tProp = tProp / 63897600; //convert to ms
+		//tProp = (unsigned int) tProp;
+		//pc.printf("%i\n",tProp);
+    pc.printf("%"PRIu64"\n",tProp);
 		//pc.printf("%s", uint64ToString(*tProp));
 		//pc.printf("%ll", tProp);
 		//pc.printf("%")
@@ -226,10 +227,10 @@ int main() {
 	dwSetPreambleCode(dwm, PREAMBLE_CODE_64MHZ_9);
 
 	dwCommitConfiguration(dwm);
-	enableClocks();
+	//enableClocks();
 	tStart.full = 0;
 	tEnd.full = 0;
-	dwIdle(dwm);
+	//dwIdle(dwm);
 
   if(isBeacon == true){
     rangingBeacon();
