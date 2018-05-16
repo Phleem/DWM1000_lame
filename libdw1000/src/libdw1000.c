@@ -728,7 +728,7 @@ void dwCorrectTimestamp(dwDevice_t* dev, dwTime_t* timestamp) {
 }
 
 void dwGetSystemTimestamp(dwDevice_t* dev, dwTime_t* time) {
-	dwSpiRead(dev, SYS_TIME, NO_SUB, time->raw, LEN_SYS_TIME);
+	dwSpiRead(dev, SYS_TIME, NO_SUB, &(time->raw), LEN_SYS_TIME);
 }
 
 bool dwIsTransmitDone(dwDevice_t* dev) {

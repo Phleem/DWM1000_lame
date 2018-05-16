@@ -1,6 +1,10 @@
 #include "mbed.h"
+#include <string>
+#include <inttypes.h>
 extern "C" {
 #include "libdw1000.h"
+
+using namespace std;
 }
 
 DigitalOut heartbeat(LED2);
@@ -77,29 +81,113 @@ static dwOps_t ops = {
   .delayms = delayms,
   .reset = reset
 };
+
+const char* txPacket = "foobar";
+bool isBeacon = false;
 dwDevice_t dwm_device;
 dwDevice_t* dwm = &dwm_device;
+dwTime_t tStart;
+dwTime_t tEnd;
+uint32_t tProp;
 
-void txcallback(dwDevice_t *dev){}
-void rxcallback(dwDevice_t *dev){}
+string uint64ToString(uint64_t input) {
+  string result = "";
+  uint8_t base = 10;
 
-char* txPacket = "foobar";
+  do {
+    char c = input % base;
+    input /= base;
+
+    if (c < 10)
+      c +='0';
+    else
+      c += 'A' - 10;
+    result = c + result;
+  } while (input);
+  return result;
+}
+
+void enableClocks(){
+	uint8_t enable = 0b010100;
+	dwSpiWrite(dwm, 0x36, 0, (void*) enable, sizeof(enable));
+}
 
 void send_dummy(dwDevice_t* dev) {
 	dwNewTransmit(dev);
 	dwSetDefaults(dev);
 	dwSetData(dev, (uint8_t*)txPacket, strlen(txPacket));
 	dwStartTransmit(dev);
+}
+
+void send_ranging(dwDevice_t* dev) {
+	dwNewTransmit(dev);
+	dwSetDefaults(dev);
+	dwSetData(dev, (uint8_t*)txPacket, strlen(txPacket));
+  dwGetSystemTimestamp(dev, &tStart);
+	dwStartTransmit(dev);
+  dwNewReceive(dev);
+  dwStartReceive(dev);
+}
+
+void txcallback(dwDevice_t *dev){}
+
+void rxcallback(dwDevice_t *dev){
+  if(isBeacon == true){
+		
+    send_dummy(dev);
+    dwNewReceive(dev);
+    dwStartReceive(dev);
+  }
+  else{
+    dwGetSystemTimestamp(dev, &tEnd);
+  }
 
 }
+
+
+
+
 
 void calculateSSTimeOfFlight(uint32_t* timeRound, uint32_t* timeReply, uint32_t* timeOfFlight){
     *timeOfFlight = (uint32_t) (0.5f * (*timeRound - *timeReply));
 }
 void calculateDeltaTime(uint32_t* timeStart, uint32_t* timeEnd, uint32_t* timeDelta){
-    *timeDelta = timeEnd->low32 - timeStart->low32;
+    *timeDelta = (*timeEnd) - (*timeStart);
 }
-//Receiver: send something
+
+void rangingBeacon(){
+  dwNewReceive(dwm);
+  dwSetDefaults(dwm);
+  dwStartReceive(dwm);
+  dwInterruptOnReceived(dwm, true);
+
+    while(true){
+    dwHandleInterrupt(dwm);
+    }
+}
+
+void rangingAnchor(){
+    dwInterruptOnReceived(dwm, true);
+		dwTime_t systemTime1;
+		systemTime1.full = 0;
+		dwTime_t systemTime2;
+		systemTime2.full = 0;
+		dwGetSystemTimestamp(dwm, &systemTime1);
+		wait(2);
+		dwGetSystemTimestamp(dwm, &systemTime2);
+		pc.printf("%"PRIu32"\n",systemTime1.low32);
+		pc.printf("%"PRIu32"\n",systemTime2.low32);
+    
+		send_ranging(dwm);
+    calculateDeltaTime(&(tStart.low32), &(tEnd.low32), &tProp);
+		
+    //pc.printf("%"PRIu32"\n",tProp);
+    //pc.printf("%"PRIu64"\n",tProp);
+		//pc.printf("%s", uint64ToString(*tProp));
+		//pc.printf("%ll", tProp);
+		//pc.printf("%")
+}
+//Sender: send something
 //Receiver: get TransmitTimestamp timeRound1
 //Receiver: get ReceiveTimestamp timeReply1
 //Receiver: isReceiveTimestampvailable
@@ -113,7 +201,7 @@ void calculateDeltaTime(uint32_t* timeStart, uint32_t* timeEnd, uint32_t* timeDe
 // main() runs in its own thread in the OS
 int main() {
 
-  bool isSender = true;
+
 
 	heartbeat = 1;
 	sReset = 1;
@@ -138,34 +226,18 @@ int main() {
 	dwSetPreambleCode(dwm, PREAMBLE_CODE_64MHZ_9);
 
 	dwCommitConfiguration(dwm);
+	enableClocks();
+	tStart.full = 0;
+	tEnd.full = 0;
+	dwIdle(dwm);
 
-  uint8_t sendercount = 0;
-  if(isSender == true){
-    while (true) {
-        send_dummy(dwm);
-        sendercount ++;
-        char str[20];
-        sprintf(str, "%d", sendercount);
-        strcat(str, ". Message");
-        txPacket = str;
-        heartbeat = !heartbeat;
-        wait(.5f);
+  if(isBeacon == true){
+    rangingBeacon();
+  }
+  else{
+    while(true){
+      rangingAnchor();
+      wait(2);
     }
   }
-  else {
-    while (true){
-      dwNewReceive(dwm);
-      dwSetDefaults(dwm);
-      dwStartReceive(dwm);
-
-      uint8_t data[dwGetDataLength(dwm)];
-      dwGetData(dwm, data, dwGetDataLength(dwm));
-      pc.printf("Data Received:\r\n");
-      //data[dwGetDataLength(dwm)] = '\0';
-      pc.printf("%s\n", data);
-      wait(1);
-    }
-  }
-
-
 }
