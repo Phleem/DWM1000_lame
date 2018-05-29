@@ -82,27 +82,30 @@ static dwOps_t ops = {
 };
 
 const char* txPacket = "foobar";
+uint8_t data[255];
 bool isBeacon = false;
 bool sendRanging = false;
 dwDevice_t dwm_device;
 dwDevice_t* dwm = &dwm_device;
-dwTime_t tStart;
-dwTime_t tEnd;
-dwTime_t tSystemOld;
-dwTime_t tSystem;
-uint64_t tProp;
-int64_t tDelta;
+dwTime_t tStartRound;
+dwTime_t tEndRound;
+dwTime_t tStartReply;
+dwTime_t tDelay;
+dwTime_t tEndReply;
+long long int tRound;
+long long int tReply;
+float tProp;
 
 void enableClocks(){
 	uint8_t enable = 0b010100;
 	dwSpiWrite(dwm, 0x36, 0, (void*) enable, sizeof(enable));
 }
 
-void calculateSSTimeOfFlight(uint32_t* timeRound, uint32_t* timeReply, uint32_t* timeOfFlight){
-    *timeOfFlight = (uint32_t) (0.5f * (*timeRound - *timeReply));
+void calculateSSTimeOfFlight(long long int* timeRound, long long int* timeReply, float* tProp){
+    *tProp = (float) (0.5f * (*timeRound - *timeReply));
 }
-void calculateDeltaTime(uint64_t* timeStart, uint64_t* timeEnd, int64_t* timeDelta){
-    *timeDelta = (*timeEnd) - (*timeStart);
+void calculateDeltaTime(uint64_t* timeStart, uint64_t* timeEnd, long long int* timeDelta){
+    *timeDelta = llabs((long long int)(*timeEnd) - (long long int)(*timeStart));
 }
 
 void send_dummy(dwDevice_t* dev) {
@@ -112,13 +115,20 @@ void send_dummy(dwDevice_t* dev) {
 	dwStartTransmit(dev);
 }
 
+void sendReply(dwDevice_t* dev) {
+
+	dwGetReceiveTimestamp(dev, &tStartReply);
+	data[0] = tStartReply.full;
+	dwNewTransmit(dev);
+	tEndReply = dwSetDelay(dev, &tDelay);
+	data[40] = tEndReply.full;
+	dwSetData(dev, data, sizeof(data));
+	dwStartTransmit(dev);
+}
+
 void send_ranging(dwDevice_t* dev) {
 	dwNewTransmit(dev);
-	//dwSetDefaults(dev);
-	//dwSetData(dev, (uint8_t*)txPacket, strlen(txPacket));
-  //dwGetSystemTimestamp(dev, &tStart);
 	dwStartTransmit(dev);
-	dwGetTransmitTimestamp(dev, &tStart);
 }
 
 void setSendRangingFlag(){
@@ -127,6 +137,7 @@ void setSendRangingFlag(){
 
 void txcallback(dwDevice_t *dev){
 	if(isBeacon == false){
+		dwGetTransmitTimestamp(dev, &tStartRound);
 		dwNewReceive(dwm);
    		dwStartReceive(dwm);
 	}
@@ -134,16 +145,23 @@ void txcallback(dwDevice_t *dev){
 
 void rxcallback(dwDevice_t *dev){
   if(isBeacon == true){
-    send_dummy(dev);
+    sendReply(dev);
   }
   else{
-    dwGetSystemTimestamp(dev, &tEnd);
-		//calculateDeltaTime(&(systemTime1.full), &(systemTime2.full), &t2secs);
-		//calculateDeltaTime(&(tStart.full), &(tEnd.full),&tProp);
-		//t2secs = t2secs / 63897600; //convert to ms
-		//pc.printf("%"PRIu64"\n",t2secs);
-	calculateDeltaTime(&tStart.full, &tEnd.full, &tDelta);
-	pc.printf("%"PRId64"\n",tDelta);
+	dwGetReceiveTimestamp(dev, &tEndRound);
+	dwGetData(dev, tStartReply.raw, 5);
+	dwGetData(dev, tEndReply.raw, 5);
+
+	calculateDeltaTime(&(tStartReply.full), &(tEndReply.full), &tReply);
+	calculateDeltaTime(&(tStartRound.full), &(tEndRound.full), &tRound);
+
+	calculateSSTimeOfFlight(&tRound, &tReply, &tProp);
+
+	tProp /= 63897.6f; //to ns
+	float distance = tProp * 0.3f;
+
+	pc.printf("%f\n",tProp);
+	pc.printf("%f\n", distance);
     //pc.printf("%"PRIu64"\n",tStart.full);
 	//pc.printf("%"PRIu64"\n",tEnd.full);
 	char seperator = 'X';
@@ -215,10 +233,12 @@ int main() {
 
 	dwCommitConfiguration(dwm);
 	//enableClocks();
-	tStart.full = 0;
-	tEnd.full = 0;
-	tSystem.full = 0;
-	tSystemOld.full = 0;
+	tStartRound.full = 0;
+	tEndRound.full = 0;
+	tStartReply.full = 0;
+	tEndReply.full = 0;
+	tDelay.full = 0;
+	tDelay.full = 63897600000; //1sec
 	//dwIdle(dwm);
 
   if(isBeacon == true){
