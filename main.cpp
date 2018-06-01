@@ -82,9 +82,10 @@ static dwOps_t ops = {
 };
 
 const char* txPacket = "foobar";
-uint8_t data[255];
-bool isBeacon = false;
-bool sendRanging = false;
+uint8_t data[10];
+bool isBeacon = true;
+volatile bool hasSendRanging = false;
+volatile bool sendRanging = false;
 dwDevice_t dwm_device;
 dwDevice_t* dwm = &dwm_device;
 dwTime_t tStartRound;
@@ -108,6 +109,31 @@ void calculateDeltaTime(uint64_t* timeStart, uint64_t* timeEnd, long long int* t
     *timeDelta = llabs((long long int)(*timeEnd) - (long long int)(*timeStart));
 }
 
+void calculatePropagation(dwDevice_t *dev){
+	dwGetReceiveTimestamp(dev, &tEndRound);
+	dwGetData(dev, data, sizeof(data));
+
+	memcpy(tStartReply.raw, data, 5);
+	memcpy(tEndReply.raw, (data+5), 5);
+
+	calculateDeltaTime(&(tStartReply.full), &(tEndReply.full), &tReply);
+	calculateDeltaTime(&(tStartRound.full), &(tEndRound.full), &tRound);
+
+	calculateSSTimeOfFlight(&tRound, &tReply, &tProp);
+
+	tProp /= 63897.6f; //to ns
+	float distance = tProp * 0.3f; //0.3 km per nanosecond
+
+	//pc.printf("%f\n",tProp);
+	//pc.printf("%f\n", distance);
+    pc.printf("%"PRIu64"\n",tStartRound.full);
+	pc.printf("%"PRIu64"\n",tEndRound.full);
+	pc.printf("%"PRIu64"\n",tStartReply.full);
+	pc.printf("%"PRIu64"\n",tEndReply.full);
+	char seperator = 'X';
+	pc.printf("%c\n",seperator);
+}
+
 void send_dummy(dwDevice_t* dev) {
 	dwNewTransmit(dev);
 	//dwSetDefaults(dev);
@@ -118,10 +144,17 @@ void send_dummy(dwDevice_t* dev) {
 void sendReply(dwDevice_t* dev) {
 
 	dwGetReceiveTimestamp(dev, &tStartReply);
-	data[0] = tStartReply.full;
+	memcpy(data, tStartReply.raw, 5);
+	/*for(int i = 0; i<5; i++){
+		*(data + i) = tStartReply.raw[i];
+	}*/
 	dwNewTransmit(dev);
-	tEndReply = dwSetDelay(dev, &tDelay);
-	data[40] = tEndReply.full;
+	//tEndReply = dwSetDelay(dev, &tDelay);
+	dwGetSystemTimestamp(dev, &tEndReply);
+	/*for(int i = 5; i<10; i++){
+		*(data + i) = tEndReply.raw[i-5];
+	}*/
+	memcpy(&data[5], tEndReply.raw, 5);
 	dwSetData(dev, data, sizeof(data));
 	dwStartTransmit(dev);
 }
@@ -133,13 +166,13 @@ void send_ranging(dwDevice_t* dev) {
 
 void setSendRangingFlag(){
 	sendRanging = !sendRanging;
+	hasSendRanging = false;
+	//.printf("%c\n", 'T');
 }
 
 void txcallback(dwDevice_t *dev){
 	if(isBeacon == false){
 		dwGetTransmitTimestamp(dev, &tStartRound);
-		dwNewReceive(dwm);
-   		dwStartReceive(dwm);
 	}
 }
 
@@ -148,64 +181,49 @@ void rxcallback(dwDevice_t *dev){
     sendReply(dev);
   }
   else{
-	dwGetReceiveTimestamp(dev, &tEndRound);
-	dwGetData(dev, tStartReply.raw, 5);
-	dwGetData(dev, tEndReply.raw, 5);
-
-	calculateDeltaTime(&(tStartReply.full), &(tEndReply.full), &tReply);
-	calculateDeltaTime(&(tStartRound.full), &(tEndRound.full), &tRound);
-
-	calculateSSTimeOfFlight(&tRound, &tReply, &tProp);
-
-	tProp /= 63897.6f; //to ns
-	float distance = tProp * 0.3f;
-
-	pc.printf("%f\n",tProp);
-	pc.printf("%f\n", distance);
-    //pc.printf("%"PRIu64"\n",tStart.full);
-	//pc.printf("%"PRIu64"\n",tEnd.full);
-	char seperator = 'X';
-	pc.printf("%c\n",seperator);
-
+	calculatePropagation(dev);
   }
 
 }
 
 void rangingBeacon(){
-  dwNewReceive(dwm);
-  //dwSetDefaults(dwm);
-  dwStartReceive(dwm);
+ 	dwNewReceive(dwm);
+  	dwStartReceive(dwm);
 	while(true){
-		dwHandleInterrupt(dwm);
+		if(sIRQ){
+			dwHandleInterrupt(dwm);
+		}
 	} 
   
    
 }
 
 void rangingAnchor(){
-
-	if(sIRQ == 1){//poll IRQ-Pin
+	//dwNewReceive(dwm);
+	//dwStartReceive(dwm);
+	while(true){
+		if(sIRQ){//poll IRQ-Pin
+		bool isTransmitDone = dwIsTransmitDone(dwm);
+		bool isReceiveDone = dwIsReceiveDone(dwm);
+		bool isReceiveFailed = dwIsReceiveFailed(dwm);
+		bool isReceiveTimeout= dwIsReceiveTimeout(dwm);
+		pc.printf("%d %d %d %d \n",isTransmitDone, isReceiveDone, isReceiveFailed, isReceiveTimeout);
 		dwHandleInterrupt(dwm);
+		}
+		if(sendRanging && hasSendRanging == false){
+			//send_ranging(dwm);
+			send_ranging(dwm);
+			hasSendRanging = true;
+		}	
 	}
-	if(sendRanging == true){
-		send_ranging(dwm);
-	}		
+		
 }
-
-//TODO: implement SS-2Way-Ranging
-//Anchor: send something, take timestamp
-//Beacon: get TransmitTimestamp timeRound1
-//Beacon: get ReceiveTimestamp timeReply1
-//Beacon: isReceiveTimestampvailable
-//Beacon: send to Sender
-//Anchor: get TransmitTimestamp timeReply2
-//Anchor: get ReceiveTimestamp timeRound2
-//Anchor: send to Receiver timeReply2 und timeRound2
-//Beacon: calculate timeOfFlight and Range
 
 
 // main() runs in its own thread in the OS
 int main() {
+
+	reset(dwm);
 
 	heartbeat = 1;
 	sReset = 1;
@@ -228,30 +246,31 @@ int main() {
 	dwSetChannel(dwm, CHANNEL_2);
 	dwSetPreambleCode(dwm, PREAMBLE_CODE_64MHZ_9);
 
-	dwInterruptOnReceived(dwm,true); //Interrupt on receiving a good Frame is triggered
-	dwInterruptOnSent(dwm, true); //Interrupt on sending a Frame
-
 	dwCommitConfiguration(dwm);
-	//enableClocks();
+
+	dwReceivePermanently(dwm, true);
+
 	tStartRound.full = 0;
 	tEndRound.full = 0;
 	tStartReply.full = 0;
 	tEndReply.full = 0;
 	tDelay.full = 0;
 	tDelay.full = 63897600000; //1sec
-	//dwIdle(dwm);
+	
 
   if(isBeacon == true){
-	dwReceivePermanently(dwm, true);
+	dwInterruptOnReceived(dwm, true); //Interrupt on receiving a good Frame is triggered
     rangingBeacon();
   }
   else{
+	dwInterruptOnReceived(dwm, true); //Interrupt on receiving a good Frame is triggered
+	dwInterruptOnSent(dwm, true); //Interrupt on sending a Frame
 	Ticker ranger;
-	ranger.attach(&setSendRangingFlag, 2.5);
-    while(true){
-      rangingAnchor();
-    }
+	ranger.attach(&setSendRangingFlag, 5);
+    rangingAnchor();
   }
 }
 
-//TODO implement calculation of Flightime; test
+//sending times successfully
+//TODO: send with AntennaDelay
+//TODO: calculate Distances

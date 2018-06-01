@@ -597,7 +597,7 @@ void dwSetDefaults(dwDevice_t* dev) {
     //for global frame filtering
 		dwSetFrameFilter(dev, false);
     //for data frame (poll, poll_ack, range, range report, range failed) filtering
-    dwSetFrameFilterAllowData(dev, false);
+    dwSetFrameFilterAllowData(dev, true); //TODO: original Lib is false
     //for reserved (blink) frame filtering
     dwSetFrameFilterAllowReserved(dev, false);
     //setFrameFilterAllowMAC(true);
