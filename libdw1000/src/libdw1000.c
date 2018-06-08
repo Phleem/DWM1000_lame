@@ -468,7 +468,7 @@ dwTime_t dwSetDelay(dwDevice_t* dev, const dwTime_t* delay) {
 		return zero;
 	}
 	uint8_t delayBytes[5];
-	dwTime_t futureTime;
+	dwTime_t futureTime = {.full = 0};
 	dwGetSystemTimestamp(dev, &futureTime);
 	futureTime.full += delay->full;
   memcpy(delayBytes, futureTime.raw, sizeof(futureTime.raw));

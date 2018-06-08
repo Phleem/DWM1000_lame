@@ -81,6 +81,55 @@ static dwOps_t ops = {
   .reset = reset
 };
 
+static void setBit(uint8_t data[], unsigned int n, unsigned int bit, bool val) {
+	unsigned int idx;
+	unsigned int shift;
+
+	idx = bit / 8;
+	if(idx >= n) {
+		return; // TODO proper error handling: out of bounds
+	}
+	uint8_t* targetByte = &data[idx];
+	shift = bit % 8;
+	if(val) {
+		*targetByte |= (1<<shift);
+	} else {
+	  *targetByte &= ~(1<<shift);
+	}
+}
+
+void dwStartDelayedTransmit(dwDevice_t* dev) {
+	dwWriteTransmitFrameControlRegister(dev);
+	setBit(dev->sysctrl, LEN_SYS_CTRL, SFCST_BIT, !dev->frameCheck);
+	setBit(dev->sysctrl, LEN_SYS_CTRL, TXDLYS_BIT, true);
+	setBit(dev->sysctrl, LEN_SYS_CTRL, TXSTRT_BIT, true);
+	dwSpiWrite(dev, SYS_CTRL, NO_SUB, dev->sysctrl, LEN_SYS_CTRL);
+	if(dev->permanentReceive) {
+		memset(dev->sysctrl, 0, LEN_SYS_CTRL);
+		dev->deviceMode = RX_MODE;
+		dwStartReceive(dev);
+	} else if (dev->wait4resp) {
+    dev->deviceMode = RX_MODE;
+  } else {
+		dev->deviceMode = IDLE_MODE;
+	}
+}
+
+dwTime_t dwSetDelayBuffer(dwDevice_t* dev, const dwTime_t* delay, dwTime_t* futureTime) {
+	uint8_t delayBytes[5];
+	//dwTime_t futureTime = {.full = 0};
+	dwGetSystemTimestamp(dev, futureTime);
+	futureTime->full += delay->full;
+  memcpy(delayBytes, futureTime->raw, sizeof(futureTime->raw));
+	delayBytes[0] = 0;
+	delayBytes[1] &= 0xFE;
+	dwSpiWrite(dev, DX_TIME, NO_SUB, delayBytes, LEN_DX_TIME);
+	// adjust expected time with configured antenna delay
+  memcpy(futureTime->raw, delayBytes, sizeof(futureTime->raw));
+	futureTime->full += dev->antennaDelay.full;
+	return *futureTime;
+}
+
 const char* txPacket = "foobar";
 uint8_t data[10];
 bool isBeacon = true;
@@ -95,14 +144,38 @@ dwTime_t tDelay;
 dwTime_t tEndReply;
 long long int tRound;
 long long int tReply;
-float tProp;
+double tProp;
+
+Ticker ranger;
+
+enum FrameType{
+        PING=1,
+        ANCHOR_RESPONSE,
+        BEACON_RESPONSE,
+        TRANSFER_FRAME,
+        DISTANCES_FRAME
+};
+ 
+    //the packed attribute makes sure the types only use their respective size in memory (8 bit for uint8_t), otherwise they would always use 32 bit
+    //IT IS A GCC SPECIFIC DIRECTIVE
+struct __attribute__((packed, aligned(1))) Frame {
+        uint8_t source;
+        uint8_t destination;
+        uint8_t type;
+		uint8_t data[10];
+};
 
 void enableClocks(){
 	uint8_t enable = 0b010100;
 	dwSpiWrite(dwm, 0x36, 0, (void*) enable, sizeof(enable));
 }
 
-void calculateSSTimeOfFlight(long long int* timeRound, long long int* timeReply, float* tProp){
+void setSendRangingFlag(){
+	sendRanging = !sendRanging;
+	hasSendRanging = false;
+}
+
+void calculateSSTimeOfFlight(long long int* timeRound, long long int* timeReply, double* tProp){
     *tProp = (float) (0.5f * (*timeRound - *timeReply));
 }
 void calculateDeltaTime(uint64_t* timeStart, uint64_t* timeEnd, long long int* timeDelta){
@@ -110,6 +183,7 @@ void calculateDeltaTime(uint64_t* timeStart, uint64_t* timeEnd, long long int* t
 }
 
 void calculatePropagation(dwDevice_t *dev){
+	ranger.detach();
 	dwGetReceiveTimestamp(dev, &tEndRound);
 	dwGetData(dev, data, sizeof(data));
 
@@ -121,17 +195,22 @@ void calculatePropagation(dwDevice_t *dev){
 
 	calculateSSTimeOfFlight(&tRound, &tReply, &tProp);
 
-	tProp /= 63897.6f; //to ns
-	float distance = tProp * 0.3f; //0.3 km per nanosecond
+	tProp = tProp / 63.8976; //to ns
+	tRound = tRound / 64;
+	tReply = tReply / 64;
+	double distance = tProp * 0.299792458; //~0.3 m per nanosecond
 
-	//pc.printf("%f\n",tProp);
-	//pc.printf("%f\n", distance);
-    pc.printf("%"PRIu64"\n",tStartRound.full);
-	pc.printf("%"PRIu64"\n",tEndRound.full);
-	pc.printf("%"PRIu64"\n",tStartReply.full);
-	pc.printf("%"PRIu64"\n",tEndReply.full);
+	pc.printf("%d is Propagation in ns\n",tProp);
+	pc.printf("%d is Distance\n", distance);
+	pc.printf("%lld\n", tRound);
+	pc.printf("%lld\n", tReply);
+    //pc.printf("%"PRIu64"\n",tStartRound.full);
+	//pc.printf("%"PRIu64"\n",tEndRound.full);
+	//pc.printf("%"PRIu64"\n",tStartReply.full);
+	//pc.printf("%"PRIu64"\n",tEndReply.full);
 	char seperator = 'X';
 	pc.printf("%c\n",seperator);
+	ranger.attach(&setSendRangingFlag, 5);
 }
 
 void send_dummy(dwDevice_t* dev) {
@@ -143,31 +222,30 @@ void send_dummy(dwDevice_t* dev) {
 
 void sendReply(dwDevice_t* dev) {
 
+	
 	dwGetReceiveTimestamp(dev, &tStartReply);
 	memcpy(data, tStartReply.raw, 5);
-	/*for(int i = 0; i<5; i++){
-		*(data + i) = tStartReply.raw[i];
-	}*/
-	dwNewTransmit(dev);
-	//tEndReply = dwSetDelay(dev, &tDelay);
-	dwGetSystemTimestamp(dev, &tEndReply);
-	/*for(int i = 5; i<10; i++){
-		*(data + i) = tEndReply.raw[i-5];
-	}*/
-	memcpy(&data[5], tEndReply.raw, 5);
+	dwSetDelayBuffer(dev, &tDelay, &tEndReply);
+	memcpy((data+5), tEndReply.raw, 5);
 	dwSetData(dev, data, sizeof(data));
+	dwNewTransmit(dev);
+	//dwStartDelayedTransmit(dev);
+
+	//dwTime_t timeStart = {.full = 0};
+	//dwGetSystemTimestamp(dev, &timeStart);
+	
+	
+
+	//dwTime_t timeEnd = {.full = 0};
+	//dwGetSystemTimestamp(dev, &timeEnd);
 	dwStartTransmit(dev);
+	
+		
 }
 
 void send_ranging(dwDevice_t* dev) {
 	dwNewTransmit(dev);
 	dwStartTransmit(dev);
-}
-
-void setSendRangingFlag(){
-	sendRanging = !sendRanging;
-	hasSendRanging = false;
-	//.printf("%c\n", 'T');
 }
 
 void txcallback(dwDevice_t *dev){
@@ -199,19 +277,11 @@ void rangingBeacon(){
 }
 
 void rangingAnchor(){
-	//dwNewReceive(dwm);
-	//dwStartReceive(dwm);
 	while(true){
 		if(sIRQ){//poll IRQ-Pin
-		bool isTransmitDone = dwIsTransmitDone(dwm);
-		bool isReceiveDone = dwIsReceiveDone(dwm);
-		bool isReceiveFailed = dwIsReceiveFailed(dwm);
-		bool isReceiveTimeout= dwIsReceiveTimeout(dwm);
-		pc.printf("%d %d %d %d \n",isTransmitDone, isReceiveDone, isReceiveFailed, isReceiveTimeout);
 		dwHandleInterrupt(dwm);
 		}
 		if(sendRanging && hasSendRanging == false){
-			//send_ranging(dwm);
 			send_ranging(dwm);
 			hasSendRanging = true;
 		}	
@@ -255,7 +325,7 @@ int main() {
 	tStartReply.full = 0;
 	tEndReply.full = 0;
 	tDelay.full = 0;
-	tDelay.full = 63897600000; //1sec
+	tDelay.full = 74756096;//63897600*5; //5msec 
 	
 
   if(isBeacon == true){
@@ -265,7 +335,6 @@ int main() {
   else{
 	dwInterruptOnReceived(dwm, true); //Interrupt on receiving a good Frame is triggered
 	dwInterruptOnSent(dwm, true); //Interrupt on sending a Frame
-	Ticker ranger;
 	ranger.attach(&setSendRangingFlag, 5);
     rangingAnchor();
   }
