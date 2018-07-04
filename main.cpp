@@ -11,15 +11,15 @@ DigitalOut led(LED1);
 SPI spi(SPI_MOSI, SPI_MISO, SPI_SCK);
 DigitalOut cs(SPI_CS);
 DigitalIn sIRQ(PA_0);
-DigitalOut sReset(PA_1);
+DigitalInOut sReset(PA_1);
 Serial pc(PA_9, PA_10, 9600);
-
     //the packed attribute makes sure the types only use their respective size in memory (8 bit for uint8_t), otherwise they would always use 32 bit
     //IT IS A GCC SPECIFIC DIRECTIVE
 typedef struct __attribute__((packed, aligned(1))) DataFrame {
         uint8_t source;
         uint8_t destination;
         uint8_t type;
+		uint8_t number; 
 		uint8_t data[15];
 }DFrame;
 
@@ -78,9 +78,15 @@ static void spiSetSpeed(dwDevice_t* dev, dwSpiSpeed_t speed)
 
 static void reset(dwDevice_t* dev)
 {
+	/*
 	sReset = 0;
 	wait(0.5);
 	sReset = 1;
+	*/
+	sReset.output();
+  	sReset = 0;
+	wait(0.1);
+	sReset.input();
 }
 
 static void delayms(dwDevice_t* dev, unsigned int delay)
@@ -146,7 +152,8 @@ dwTime_t dwSetDelayBuffer(dwDevice_t* dev, const dwTime_t* delay, dwTime_t* futu
 }
 
 static const double tsfreq = 499.2e6 * 128; // Timestamp counter frequency
-static const double C = 299792458.0; // Speed of light
+static const double speedOfLight = 299792458.0; // Speed of light in m/s
+static const uint8_t noDataFramesize = 4;
 
 bool isBeacon = false;
 volatile bool hasSendRanging = false;
@@ -201,70 +208,66 @@ void setSendRangingFlag(){
 	hasSendRanging = false;
 }
 
-void sendBeaconResponse(dwDevice_t* dev) {
-	frame.type = BEACON_RESPONSE;
-	memcpy(frame.data, tStartRound1.raw, 5);
-	memcpy((frame.data+5), tEndRound1.raw, 5);
-	dwSetDelayBuffer(dev, &tDelay, &tEndReply2);
-	memcpy((frame.data+10), tEndReply2.raw, 5);
+void sendTransferFrame(dwDevice_t* dev) {
+	frame.type = TRANSFER_FRAME;
+	memcpy(frame.data, tStartReply1.raw, 5);
+	memcpy((frame.data+5), tEndReply1.raw, 5);
+	memcpy((frame.data+10), tEndRound2.raw, 5);
 	dwSetData(dev, (uint8_t*)&frame, sizeof(frame));
 	dwNewTransmit(dev);
-	dwStartTransmit(dev);
-	//dwStartDelayedTransmit(dev);	
+	dwStartTransmit(dev);	
 }
 
 void sendRangingPoll(dwDevice_t* dev) {
 	dwNewTransmit(dev);
 	frame.type = PING;
-	dwSetData(dev, (uint8_t*) &frame, sizeof(frame));
+	dwSetData(dev, (uint8_t*) &frame, noDataFramesize);
+	dwStartTransmit(dev);
+}
+
+void sendBeaconResponse(dwDevice_t* dev){
+	dwNewTransmit(dev);
+	frame.type = BEACON_RESPONSE;
+	dwSetData(dev, (uint8_t*) &frame, noDataFramesize);
 	dwStartTransmit(dev);
 }
 
 void sendAnchorResponse(dwDevice_t* dev){
 	dwNewTransmit(dev);
 	frame.type = ANCHOR_RESPONSE;
-	dwSetData(dev, (uint8_t*) &frame, sizeof(frame));
+	dwSetData(dev, (uint8_t*) &frame, noDataFramesize);
 	dwStartTransmit(dev);
 }
 
-void answerPing(dwDevice_t *dev){
-	dwGetReceiveTimestamp(dev, &tStartReply1);
-	sendAnchorResponse(dev);
-}
-
-void answerAnchorResponse(dwDevice_t *dev){
-	ranger.detach();
-	dwGetReceiveTimestamp(dev, &tEndRound1);
-	sendBeaconResponse(dev);
-	ranger.attach(&setSendRangingFlag, 5);
-}
-
 void calculatePropagation(dwDevice_t *dev){
-	dwGetReceiveTimestamp(dev, &tEndRound2);
+
+	ranger.detach();
+
 	dwGetData(dev, (uint8_t*)&frame, sizeof(frame));
 
-	memcpy(tStartRound1.raw, frame.data, 5);
-	memcpy(tEndRound1.raw, (frame.data+5), 5);
-	memcpy(tEndReply2.raw, (frame.data+10), 5);
+	memcpy(tStartReply1.raw, frame.data, 5);
+	memcpy(tEndReply1.raw, (frame.data+5), 5);
+	memcpy(tEndRound2.raw, (frame.data+10), 5);
 
-	calculateDeltaTime(&tStartRound1, &tEndRound1, &tRound1);
+	calculateDeltaTime(&tStartRound1, &tStartReply2, &tRound1);
 	calculateDeltaTime(&tStartReply1, &tEndReply1, &tReply1);
-	calculateDeltaTime(&tEndRound1, &tEndReply2, &tReply2);
+	calculateDeltaTime(&tStartReply2, &tEndReply2, &tReply2);
 	calculateDeltaTime(&tEndReply1, &tEndRound2, &tRound2);
 	
-	//calculatePropagationFormulaInNS(tRound1, tReply1, tRound2, tReply2, tPropTick);
 	calculatePropagationFormula(tRound1, tReply1, tRound2, tReply2, tPropTick);
 
-	long double tPropTime = tPropTick / tsfreq; //in seconds
-	long double distance = tPropTime * C; //~0.3 m per nanosecond
+	long double tPropTime = (tPropTick / tsfreq); //in seconds
 
-	pc.printf("%Lf is Propagation in ns\n",tPropTime);
-	pc.printf("%Lf is Distance\n", distance);
-	pc.printf("%"PRIu64"\n",tRound1);
-	pc.printf("%"PRIu64"\n",tReply1);
-	pc.printf("%"PRIu64"\n",tReply2);
-	pc.printf("%"PRIu64"\n",tRound2);
+	long double distance = (tPropTime * speedOfLight);// - 154.03; //~0.3 m per nanosecond; offset 154.03 calculated at ~1 cm distance
+ 
+	pc.printf("%0.12Lf,%Lf;\r\n",tPropTime, distance);
+	//pc.printf(" is Distance in m\r\n", distance);
 	/*
+	pc.printf("%"PRIu64"\r\n",tRound1);
+	pc.printf("%"PRIu64"\r\n",tReply1);
+	pc.printf("%"PRIu64"\r\n",tReply2);
+	pc.printf("%"PRIu64"\r\n",tRound2);
+	
 	pc.printf("%"PRIu64"\n",tStartRound1);
 	pc.printf("%"PRIu64"\n",tEndRound1);
 	pc.printf("%"PRIu64"\n",tStartReply1);
@@ -273,42 +276,62 @@ void calculatePropagation(dwDevice_t *dev){
 	pc.printf("%"PRIu64"\n",tEndReply2);
 	*/
 	char seperator = 'X';
-	pc.printf("%c\n",seperator);
-	
+	//pc.printf("%c\n",seperator);
+
+	tStartRound1.full = 0;
+	tEndRound1.full = 0;
+	tStartReply1.full = 0;
+	tEndReply1.full = 0;
+	tStartRound2.full = 0;
+	tEndRound2.full = 0;
+	tStartReply2.full = 0;
+	tEndReply2.full = 0;
+
+	ranger.attach(&setSendRangingFlag, 5);
 }
 
 void txcallback(dwDevice_t *dev){
-	if(isBeacon == true){
+	if(isBeacon == false){
 		switch(frame.type){
-			case PING: dwGetTransmitTimestamp(dev, &tStartRound1); break;
+			case PING: 
+				dwGetTransmitTimestamp(dev, &tStartRound1); break;
+			case ANCHOR_RESPONSE:
+				dwGetReceiveTimestamp(dev, &tStartReply2); 
+				dwGetTransmitTimestamp(dev, &tEndReply2); break;
 		}
 	}
 	else{
 		switch(frame.type){
-			case ANCHOR_RESPONSE: dwGetTransmitTimestamp(dev, &tEndReply1); break;
+			case BEACON_RESPONSE:
+				dwGetReceiveTimestamp(dev, &tStartReply1); 
+				dwGetTransmitTimestamp(dev, &tEndReply1); break;
 		}
 	}
 }
 
 void rxcallback(dwDevice_t *dev){
-  if(isBeacon == true){
-	  dwGetData(dev, (uint8_t*)&frame, sizeof(frame));
+  if(isBeacon == false){
+	  dwGetData(dev, (uint8_t*)&frame, noDataFramesize);
 	  switch(frame.type){
-		  case ANCHOR_RESPONSE: answerAnchorResponse(dev); break;
+		  case BEACON_RESPONSE: sendAnchorResponse(dev); break;
+		  case TRANSFER_FRAME: calculatePropagation(dev); break;
 	  }
   }
   else{
-	  dwGetData(dev, (uint8_t*)&frame, sizeof(frame));
+	  dwGetData(dev, (uint8_t*)&frame, noDataFramesize);
 	  switch(frame.type){
-		  case PING: answerPing(dev); break;
-		  case BEACON_RESPONSE: calculatePropagation(dev); break;
+		  case PING: 
+		  	  sendBeaconResponse(dev); break;
+		  case ANCHOR_RESPONSE: 
+		  	  dwGetReceiveTimestamp(dev, &tEndRound2);
+			  sendTransferFrame(dev); break;
 	  }
 	
   }
 
 }
 
-void rangingBeacon(){
+void rangingAnchor(){
 	while(true){
 		if(sIRQ){
 			dwHandleInterrupt(dwm);
@@ -322,7 +345,7 @@ void rangingBeacon(){
    
 }
 
-void rangingAnchor(){
+void rangingBeacon(){
 	dwNewReceive(dwm);
 	dwStartReceive(dwm);
 	while(true){
@@ -341,7 +364,7 @@ int main() {
 	reset(dwm);
 
 	heartbeat = 1;
-	sReset = 1;
+	sReset.input();
 	cs = 1;
 	dwInit(dwm, &ops);       // Init libdw
 	uint8_t result = dwConfigure(dwm); // Configure the dw1000 chip
@@ -380,14 +403,13 @@ int main() {
 
   if(isBeacon == true){
 	dwInterruptOnReceived(dwm, true);
-	dwInterruptOnSent(dwm, true);
-	ranger.attach(&setSendRangingFlag, 5); //Interrupt on receiving a good Frame is triggered
+	dwInterruptOnSent(dwm, true); //Interrupt on receiving a good Frame is triggered
     rangingBeacon();
   }
   else{
 	dwInterruptOnReceived(dwm, true); //Interrupt on receiving a good Frame is triggered
 	dwInterruptOnSent(dwm, true); //Interrupt on sending a Frame
+	ranger.attach(&setSendRangingFlag, 5); //set PollingIntervall to 5 seconds
     rangingAnchor();
   }
 }
- //TODO: cast to double after making cast to double for tRound1 etc -> wonky Behavior
