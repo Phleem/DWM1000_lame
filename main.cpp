@@ -275,9 +275,6 @@ void calculatePropagation(dwDevice_t *dev){
 	pc.printf("%"PRIu64"\n",tEndRound2);
 	pc.printf("%"PRIu64"\n",tEndReply2);
 	*/
-	char seperator = 'X';
-	//pc.printf("%c\n",seperator);
-
 	tStartRound1.full = 0;
 	tEndRound1.full = 0;
 	tStartReply1.full = 0;
@@ -287,7 +284,7 @@ void calculatePropagation(dwDevice_t *dev){
 	tStartReply2.full = 0;
 	tEndReply2.full = 0;
 
-	ranger.attach(&setSendRangingFlag, 5);
+	ranger.attach(&setSendRangingFlag, 2);
 }
 
 void txcallback(dwDevice_t *dev){
@@ -409,7 +406,7 @@ int main() {
   else{
 	dwInterruptOnReceived(dwm, true); //Interrupt on receiving a good Frame is triggered
 	dwInterruptOnSent(dwm, true); //Interrupt on sending a Frame
-	ranger.attach(&setSendRangingFlag, 5); //set PollingIntervall to 5 seconds
+	ranger.attach(&setSendRangingFlag, 2); //set PollingIntervall to 5 seconds
     rangingAnchor();
   }
 }
