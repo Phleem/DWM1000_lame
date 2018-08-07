@@ -16,10 +16,12 @@ Serial pc(PA_9, PA_10, 9600);
     //the packed attribute makes sure the types only use their respective size in memory (8 bit for uint8_t), otherwise they would always use 32 bit
     //IT IS A GCC SPECIFIC DIRECTIVE
 typedef struct __attribute__((packed, aligned(1))) DataFrame {
-        uint8_t source;
-        uint8_t destination;
+		uint16_t frameControl  = 0b1000100001000000;
+		uint8_t sequenceNumber = 0b00000000;
+		uint8_t destPan[2];
+		uint16_t destAddress;
+        uint8_t srcAddress[2];
         uint8_t type;
-		uint8_t number; 
 		uint8_t data[15];
 }DFrame;
 
@@ -31,6 +33,14 @@ enum FrameType{
         DISTANCES_FRAME=5
 };
 
+
+//TODO create correct Mac-header to be send at the beginning of each frame
+//TODO FrameControlField 0b0000001000010001
+//TODO SequenceNumber 0b00000000
+//TODO DestPan&Address dwm->network&Address[0]+dwm->network&Address[1]+destAddress
+//TODO SourceAddress dwm->network&Address[2]+dwm->network&Address[3]
+
+//TODO frame initialize 
 
 
 static void spiWrite(dwDevice_t* dev, const void* header, size_t headerLength,
@@ -153,9 +163,9 @@ dwTime_t dwSetDelayBuffer(dwDevice_t* dev, const dwTime_t* delay, dwTime_t* futu
 
 static const double tsfreq = 499.2e6 * 128; // Timestamp counter frequency
 static const double speedOfLight = 299792458.0; // Speed of light in m/s
-static const uint8_t noDataFramesize = 4;
+static const uint8_t noDataFramesize = 10;
 
-bool isBeacon = false;
+
 volatile bool hasSendRanging = false;
 volatile bool sendRanging = false;
 dwDevice_t dwm_device;
@@ -175,7 +185,11 @@ uint64_t tRound2;
 uint64_t tReply2;
 long double tPropTick;
 
+//set before compiling
 DFrame frame;
+volatile uint16_t DestinationAddress = 0x01; //variable DestinationAddress to route from Anchor 
+const int srcAddress = 0x01; //0 for Anchor, increment for Beacons
+const bool isBeacon = true;
 
 Ticker ranger;
 
@@ -208,8 +222,9 @@ void setSendRangingFlag(){
 	hasSendRanging = false;
 }
 
-void sendTransferFrame(dwDevice_t* dev) {
+void sendTransferFrame(dwDevice_t* dev, uint16_t destAddress) {
 	frame.type = TRANSFER_FRAME;
+	frame.destAddress = destAddress;
 	memcpy(frame.data, tStartReply1.raw, 5);
 	memcpy((frame.data+5), tEndReply1.raw, 5);
 	memcpy((frame.data+10), tEndRound2.raw, 5);
@@ -218,23 +233,26 @@ void sendTransferFrame(dwDevice_t* dev) {
 	dwStartTransmit(dev);	
 }
 
-void sendRangingPoll(dwDevice_t* dev) {
+void sendRangingPoll(dwDevice_t* dev, uint16_t destAddress) {
 	dwNewTransmit(dev);
 	frame.type = PING;
+	frame.destAddress = destAddress;
 	dwSetData(dev, (uint8_t*) &frame, noDataFramesize);
 	dwStartTransmit(dev);
 }
 
-void sendBeaconResponse(dwDevice_t* dev){
+void sendBeaconResponse(dwDevice_t* dev, uint16_t destAddress){
 	dwNewTransmit(dev);
 	frame.type = BEACON_RESPONSE;
+	frame.destAddress = destAddress;
 	dwSetData(dev, (uint8_t*) &frame, noDataFramesize);
 	dwStartTransmit(dev);
 }
 
-void sendAnchorResponse(dwDevice_t* dev){
+void sendAnchorResponse(dwDevice_t* dev, uint16_t destAddress){
 	dwNewTransmit(dev);
 	frame.type = ANCHOR_RESPONSE;
+	frame.destAddress = destAddress;
 	dwSetData(dev, (uint8_t*) &frame, noDataFramesize);
 	dwStartTransmit(dev);
 }
@@ -310,7 +328,7 @@ void rxcallback(dwDevice_t *dev){
   if(isBeacon == false){
 	  dwGetData(dev, (uint8_t*)&frame, noDataFramesize);
 	  switch(frame.type){
-		  case BEACON_RESPONSE: sendAnchorResponse(dev); break;
+		  case BEACON_RESPONSE: sendAnchorResponse(dev, DestinationAddress); break;
 		  case TRANSFER_FRAME: calculatePropagation(dev); break;
 	  }
   }
@@ -318,23 +336,28 @@ void rxcallback(dwDevice_t *dev){
 	  dwGetData(dev, (uint8_t*)&frame, noDataFramesize);
 	  switch(frame.type){
 		  case PING: 
-		  	  sendBeaconResponse(dev); break;
+		  	  sendBeaconResponse(dev, DestinationAddress); break;
 		  case ANCHOR_RESPONSE: 
 		  	  dwGetReceiveTimestamp(dev, &tEndRound2);
-			  sendTransferFrame(dev); break;
+			  sendTransferFrame(dev, DestinationAddress); break;
 	  }
 	
   }
 
 }
 
+void receiveFailedHandler(dwDevice_t *dev){ //For debugging because no memory access in dwHandleInterrupt
+
+}
+
 void rangingAnchor(){
+	//TODO globale Addressspeicherung nutzen für Schleife um Destination zu wechseln
 	while(true){
 		if(sIRQ){
 			dwHandleInterrupt(dwm);
 		}
 		if(sendRanging && hasSendRanging == false){
-			sendRangingPoll(dwm);
+			sendRangingPoll(dwm, DestinationAddress);
 			hasSendRanging = true;
 		}	
 	} 
@@ -349,7 +372,6 @@ void rangingBeacon(){
 		if(sIRQ){//poll IRQ-Pin
 		dwHandleInterrupt(dwm);
 		}
-		
 	}
 		
 }
@@ -374,13 +396,27 @@ int main() {
 
 	dwAttachSentHandler(dwm, txcallback);
 	dwAttachReceivedHandler(dwm, rxcallback);
+	dwAttachReceiveFailedHandler(dwm, receiveFailedHandler); //For Debugging
+	
 
+	
+	//start configuration
 	dwNewConfiguration(dwm);
 	dwSetDefaults(dwm);
 	dwEnableMode(dwm, MODE_SHORTDATA_FAST_ACCURACY);
 	dwSetChannel(dwm, CHANNEL_2);
 	dwSetPreambleCode(dwm, PREAMBLE_CODE_64MHZ_9);
 
+	memset(dwm->networkAndAddress, srcAddress, 1);// set own SourceAddress
+	memset((dwm->networkAndAddress + 1), 0, 1); //fill Address with 0s
+	memset((dwm->networkAndAddress + 2), 0x88, LEN_PANADR-2); //set panID
+
+	dwInterruptOnReceiveFailed(dwm, true); //for debugging
+
+    //dwSetFrameFilterAllowData(dwm, true);
+    dwSetFrameFilterAllowBeacon(dwm, true);
+	dwSetFrameFilter(dwm, true); //for global frame filtering
+	
 	dwCommitConfiguration(dwm);
 
 	dwReceivePermanently(dwm, true);
@@ -396,7 +432,17 @@ int main() {
 
 	tDelay.full = 0;
 	tDelay.full = 74756096;//63897600*5; //5msec 
+		
+	//initialize Frame
+	if(isBeacon){
+		DestinationAddress = 0x00;
+	}
+
+	memcpy(frame.srcAddress, dwm->networkAndAddress, 2);
+	memcpy(frame.destPan, (dwm->networkAndAddress + 2), 2);
+
 	frame.type = 0;
+
 
   if(isBeacon == true){
 	dwInterruptOnReceived(dwm, true);
@@ -410,3 +456,19 @@ int main() {
     rangingAnchor();
   }
 }
+//update driver for dw1000
+
+/*
+Anchor is sending Poll and in Sysstatus Register everything seems to send correctly
+Beacon is not getting an interrupt, not even a FrameReceptionFailed etc -> the Sysmask register seems to be set correctly 
+WHY?? -> srcAddress was set as the upper 8 bits of the 16 bit storage, instead it has to be set as the lower 8 bit.
+now an interrupt is thrown at beacon-side
+
+read sysstatus in dwHandleInterrupt breakpoint -> no memory access
+possible solution: attach ReceiveFailedHandler and set Breakpoint there 
+
+
+
+Try different dwm as beacon
+Check FrameFiltering again
+*/
