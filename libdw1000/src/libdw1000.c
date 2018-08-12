@@ -594,20 +594,20 @@ void dwSetDefaults(dwDevice_t* dev) {
 		dwUseExtendedFrameLength(dev, false);
 		dwUseSmartPower(dev, false);
 		dwSuppressFrameCheck(dev, false);
-    //for global frame filtering
-		dwSetFrameFilter(dev, false);
-    //for data frame (poll, poll_ack, range, range report, range failed) filtering
-    dwSetFrameFilterAllowData(dev, false);
-    //for reserved (blink) frame filtering
-    dwSetFrameFilterAllowReserved(dev, false);
-    //setFrameFilterAllowMAC(true);
-    //setFrameFilterAllowBeacon(true);
-    //setFrameFilterAllowAcknowledgement(true);
+    	//for global frame filtering
+		dwSetFrameFilter(dev, true);
+    	//for data frame (poll, poll_ack, range, range report, range failed) filtering
+    	dwSetFrameFilterAllowData(dev, true);
+    	//for reserved (blink) frame filtering
+    	dwSetFrameFilterAllowReserved(dev, true);
+    	//setFrameFilterAllowMAC(true);
+    	dwSetFrameFilterAllowBeacon(dev, true);
+    	//setFrameFilterAllowAcknowledgement(true);
 		dwInterruptOnSent(dev, true);
 		dwInterruptOnReceived(dev, true);
-    dwInterruptOnReceiveTimeout(dev, true);
-		dwInterruptOnReceiveFailed(dev, false);
-		dwInterruptOnReceiveTimestampAvailable(dev, false);
+    	dwInterruptOnReceiveTimeout(dev, true);
+		dwInterruptOnReceiveFailed(dev, true);
+		dwInterruptOnReceiveTimestampAvailable(dev, true);
 		dwInterruptOnAutomaticAcknowledgeTrigger(dev, false);
 		dwSetReceiverAutoReenable(dev, true);
 		// default mode when powering up the chip
@@ -1247,32 +1247,42 @@ void (*_handleReceiveTimestampAvailable)(void) = dummy;
 void dwHandleInterrupt(dwDevice_t *dev) {
 	// read current status and handle via callbacks
 	dwReadSystemEventStatusRegister(dev);
-	if(dwIsClockProblem(dev) /* TODO and others */ && _handleError != 0) {
+
+	//for better debugging use local variables
+	bool isClockProblem = dwIsClockProblem(dev);
+	bool isTransmitDone = dwIsTransmitDone(dev);
+	bool isReceiveTimestampAvailable = dwIsReceiveTimestampAvailable(dev);
+	bool isReceiveFailed = dwIsReceiveFailed(dev);
+	bool isReceiveTimeout = dwIsReceiveTimeout(dev);
+	bool isReceiveDone = dwIsReceiveDone(dev);
+
+	if(isClockProblem /* TODO and others */ && _handleError != 0) {
 		(*_handleError)();
 	}
-	if(dwIsTransmitDone(dev) && dev->handleSent != 0) {
+	if(isTransmitDone && dev->handleSent != 0) {
     dwClearTransmitStatus(dev);
 		(*dev->handleSent)(dev);
 	}
-	if(dwIsReceiveTimestampAvailable(dev) && _handleReceiveTimestampAvailable != 0) {
+	if(isReceiveTimestampAvailable && /*_handleReceiveTimestampAvailable*/dev->handleReceiveFailed != 0) {
     dwClearReceiveTimestampAvailableStatus(dev);
-		(*_handleReceiveTimestampAvailable)();
+		/*(*_handleReceiveTimestampAvailable)()*/
+		dev->handleReceiveFailed(dev);
 	}
-	if(dwIsReceiveFailed(dev) && dev->handleReceiveFailed != 0) {
+	if(isReceiveFailed && dev->handleReceiveFailed != 0) {
     dwClearReceiveStatus(dev);
 		dev->handleReceiveFailed(dev);
 		if(dev->permanentReceive) {
 			dwNewReceive(dev);
 			dwStartReceive(dev);
 		}
-	} else if(dwIsReceiveTimeout(dev) && dev->handleReceiveTimeout != 0) {
+	} else if(isReceiveTimeout && dev->handleReceiveTimeout != 0) {
     dwClearReceiveStatus(dev);
 		(*dev->handleReceiveTimeout)(dev);
 		if(dev->permanentReceive) {
 			dwNewReceive(dev);
 			dwStartReceive(dev);
 		}
-	} else if(dwIsReceiveDone(dev) && dev->handleReceived != 0) {
+	} else if(isReceiveDone && dev->handleReceived != 0) {
     dwClearReceiveStatus(dev);
 		(*dev->handleReceived)(dev);
 		if(dev->permanentReceive) {
